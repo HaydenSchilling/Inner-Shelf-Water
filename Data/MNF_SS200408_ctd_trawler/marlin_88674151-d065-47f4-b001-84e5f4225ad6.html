@@ -1,0 +1,220 @@
+<!DOCTYPE html
+  PUBLIC "html">
+<html class="no-js" lang="eng">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=9,chrome=1">
+      <title>Marlin Metadata System</title>
+      <meta name="description" content="">
+      <meta name="viewport" content="width=device-width">
+      <meta name="og:title" content="Marlin Metadata System">
+      <link rel="icon" type="image/gif" href="../../images/logos/favicon.gif">
+      <link rel="alternate" type="application/rss+xml" title="Marlin Metadata System - RSS" href="http://www.marlin.csiro.au:80/geonetwork/srv/eng/rss.search?sortBy=changeDate">
+      <link rel="search" href="http://www.marlin.csiro.au:80/geonetwork/srv/eng/portal.opensearch" type="application/opensearchdescription+xml" title="Marlin Metadata System">
+      <link rel="stylesheet" href="/geonetwork/static/geonetwork-client_css.css"><script type="text/javascript">
+					var _gaq = _gaq || [];
+					_gaq.push(['_setAccount', 'UA-36263643-1']);
+					_gaq.push(['_trackPageview']);
+
+					(function() {
+					var ga = document.createElement('script');
+					ga.type = 'text/javascript';
+					ga.async = true;
+					ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
+					'http://www') + '.google-analytics.com/ga.js';
+					var s = document.getElementsByTagName('script')[0];
+					s.parentNode.insertBefore(ga, s);
+					})();
+
+				</script><script>
+                             var useOSMLayers = true;
+                         </script></head>
+   <body>
+      <div class="grey"><a href="javascript:window.print();" id="printer-button"><i class="fa fa-print"></i>Print</a><a id="rss-button" href="/geonetwork/srv/eng/rss.latest"><i class="fa fa-rss-square"></i>RSS</a><span id="login-stuff"><a id="user-button" href="javascript:toggleLogin();"><i class="fa fa-user"></i><span id="user-button_label">Sign In</span></a><label id="username_label"></label><label id="name_label"></label><label id="profile_label"></label><a href="javascript:catalogue.admin();" id="administration-button" style="display:none;"><i class="fa fa-wrench"></i>Administration</a><script>function false_(){ return false; }</script><form id="login-form" style="display: none;" onsubmit="return false_();">
+               <div id="login_div"><label>User name:</label><input type="text" id="username" name="username"><br><label>Password: </label><input type="password" id="password" name="password"><br><input type="submit" id="login_button" value="Login"></div>
+            </form></span><a id="help-button" target="_blank" href="https://confluence.csiro.au/display/DataCentreShared/MARLIN"><i class="fa fa-question-circle"></i>Help</a><a id="lang-button" href="javascript:toggle('lang-form');"><span id="current-lang">English</span>&nbsp;<i class="fa fa-angle-double-down"></i><div id="lang-form" style="display:none;"></div></a></div>
+      <div id="page-container">
+         <div id="container">
+            <div id="header">
+               <div id="logo"></div>
+               <header class="wrapper clearfix">
+                  <div style="width: 100%; margin: 0 auto;">
+                     <nav id="nav">
+                        <ul id="main-navigation">
+                           <li><a id="catalog-tab" class="selected" href="javascript:showSearch();">Catalog</a></li>
+                           <li><a id="map-tab" href="javascript:showBigMap();">Map</a></li>
+                           <li><a id="browse-tab" href="javascript:showBrowse();">Browse</a></li>
+                           <li><a id="about-tab" href="javascript:showAbout();">About</a></li>
+                        </ul>
+                     </nav>
+                  </div>
+               </header>
+            </div>
+            <div id="main">
+               <div id="copy-clipboard-ie"></div>
+               <div id="share-capabilities" style="display:none"><a id="custom-tweet-button" href="javascript:void(0);" target="_blank"></a><div id="fb-button"></div>
+               </div>
+               <div id="permalink-div" style="display:none"></div>
+               <div id="bread-crumb-app"></div>
+               <div id="search-form" style="display:none">
+                  <fieldset id="search-form-fieldset">
+                     <legend id="legend-search">Search</legend><span id="fullTextField"></span><input type="button" onclick="Ext.getCmp('advanced-search-options-content-form').fireEvent('search');" onmouseover="Ext.get(this).addClass('hover');" onmouseout="Ext.get(this).removeClass('hover');" id="search-submit" class="form-submit" value=""><div class="form-dummy"><span></span><div id="ck1"></div>
+                        <div id="ck2"></div>
+                        <div id="ck3"></div>
+                     </div>
+                     <div id="show-advanced" onclick="showAdvancedSearch()"><span class="button">show advanced options&nbsp;<i class="fa fa-angle-double-down fa-2x show-advanced-icon"></i></span></div>
+                     <div id="hide-advanced" onclick="hideAdvancedSearch(true)" style="display: none;"><span class="button">hide advanced options&nbsp;<i class="fa fa-angle-double-up fa-2x hide-advanced-icon"></i></span></div>
+                     <div id="advanced-search-options">
+                        <div id="advanced-search-options-content"></div>
+                     </div>
+                  </fieldset>
+               </div>
+               <div id="browser" style="display:none">
+                  <aside class="tag-aside">
+                     <div id="tags">
+                        <header>
+                           <h1><span>Tags</span></h1>
+                        </header>
+                        <div id="cloud-tag"></div>
+                     </div>
+                  </aside>
+                  <article>
+                     <div>
+                        <section>
+                           <div id="latest-metadata">
+                              <header>
+                                 <h1><span>Latest</span></h1>
+                              </header>
+                           </div>
+                           <div id="popular-metadata">
+                              <header>
+                                 <h1><span>Popular</span></h1>
+                              </header>
+                           </div>
+                        </section>
+                     </div>
+                  </article>
+               </div>
+               <div id="about" style="display:none;">
+                  <div id="welcome-text">
+                     <welcome.text>
+                        <h4>Welcome to Marlin - The metadata system for CSIRO Oceans and Atmosphere</h4>
+                        <p>Marlin is the central, searchable repository for dataset descriptions (metadata) relating to data held by Australia's CSIRO
+                           Oceans and Atmosphere group.
+                        </p>
+                     </welcome.text>
+                  </div>
+                  <div id="about-text">
+                     <about.text>
+                        <h4>About Marlin</h4>
+                        <p>Marlin is the central, searchable repository for dataset descriptions (metadata) relating to data held by Australia's CSIRO
+                           Oceans and Atmosphere group. Marlin currently contains descriptions of several thousand datasets held by this CSIRO Business
+                           Unit, many of which are available online via hyperlinks to data files, OGC web services, or our "Data Trawler" application.
+                        </p>
+                        <p>The following links are supplied for Marlin users:             
+                           
+                           <ul>
+                              
+                              <li><b>Catalog:</b> provides both simple free text search and keyword-based filtering (default), plus advanced options to search for metadata
+                                 
+                              </li>
+                              
+                              <li><b>Map:</b> shows bounding boxes for all datasets in the present search results; also can add individual custom spatial extents (from
+                                 web map services) for selected datasets as available, using the green "add to map" buttons
+                                 
+                              </li>
+                              
+                              <li><b>About:</b> contains some background information about the present version of Marlin
+                                 
+                              </li>
+                              
+                              <li><b>Home:</b> takes you back to this page.
+                                 
+                              </li>                               
+                              
+                              <li>CSIRO and other registered users should <b>Sign In</b> via the link above the CSIRO and Marlin logo to view internal records and/or to create and edit metadata (for CSIRO users,
+                                 your nexus ID and password should be used).
+                                 
+                              </li>                               
+                              
+                           </ul>                
+                           
+                        </p>
+                        <p>This is a recent release of the Marlin software based on the open source <a href="http://geonetwork-opensource.org/">GeoNetwork</a> product, with enhanced metadata elements and functionality compared with the previous MarLIN system which was in use 1998-2014.
+                           Significant advances include:
+                           
+                           <ul>
+                              
+                              <li>New, internationally-compliant metadata format based on ISO 19115 (and the Australian Marine Community Profile of the same)</li>
+                              
+                              <li>Facility to link to OGC web services e.g. web map services (WMS) which can be used to plot data on the Marlin map viewer,
+                                 and can be used by external web portals
+                              </li>
+                              
+                              <li>New user and group management for metadata authoring, including login with standard (nexus) credentials</li>
+                              
+                              <li>Shared application maintenance and development with the international GeoNetwork community and other Australian users</li>
+                              
+                              <li>Improved metadata sharing between multiple repositories via harvesting</li>
+                              
+                              <li>Enhanced thesaurus support e.g. from externally maintained vocabularies and services</li>
+                              
+                              <li>Extensive use of stylesheets, for the flexible display of information</li>
+                              
+                              <li>Updated look and feel for metadata search and edit pages</li>
+                              
+                           </ul>
+                        </p>
+                        <p>For more information about the GeoNetwork Open Source product on which this version of Marlin is built, see the <a href="http://geonetwork-opensource.org/">GeoNetwork project home page</a>. To contact the Marlin development team to request new features or report problems, please use the email <a href="mailto:CMARMarLINSupport@csiro.au">CMARMarLINSupport@csiro.au</a>.
+                        </p>
+                     </about.text>
+                  </div>
+                  <div style="margin: 1.33em;"><strong>ANZMEST GeoNetwork (2.10.5-SNAPSHOT)</strong> Built on: <strong>2018-11-21T21:44:40</strong> Build number: 96b4ab3187cbd2dcfc0e3f7bd12a585c0b349976
+                  </div>
+               </div>
+               <div id="big-map-container" style="display:none;background: #000;">
+                  <div id="loadingIndicator">
+                     <div class="loading-indicator">Loading ...</div>
+                  </div>
+                  <div id="nationalmapContainer" class="nationalmap-container">
+                     <div id="cesiumContainer" class="cesium-container"></div>
+                  </div>
+               </div>
+               <div id="metadata-container" style="display:none;">
+                  <div id="metadata-refresh-button" style="display:none;margin-top:20px;margin-left:20px;"></div>
+                  <div id="metadata-info"></div>
+               </div>
+               <div id="search-container" class="main wrapper clearfix">
+                  <div id="bread-crumb-div"></div>
+                  <aside id="main-aside" class="main-aside" style="display:none;">
+                     <header>Filter</header>
+                     <div id="facets-panel-div"></div>
+                  </aside>
+                  <article>
+                     <div style="display:none;">
+                        <aside id="secondary-aside" class="secondary-aside" style="display:none;">
+                           <header>Recent</header>
+                           <div id="recent-viewed-div"></div>
+                           <div id="mini-map"></div>
+                        </aside>
+                     </div>
+                     <header></header>
+                     <section>
+                        <div id="result-panel"></div>
+                     </section>
+                     <footer></footer>
+                  </article>
+               </div>
+            </div>
+            <div id="only_for_spiders"></div>
+            <div id="footer" style="display:none;">
+               <footer class="wrapper">
+                  <ul>
+                     <li style="float:left">Powered by <a href="http://geonetwork-opensource.org/">GeoNetwork OpenSource</a></li>
+                     <li><a href="http://www.gnu.org/copyleft/gpl.html">GPL</a></li>
+                  </ul>
+               </footer>
+            </div>
+         </div><input type="hidden" id="x-history-field"><iframe id="x-history-frame" height="0" width="0"></iframe><script type="text/javascript" src="/geonetwork/static/geonetwork-client-mini-nomap.js"></script><script>L_PREFER_CANVAS = true;</script></div>
+   </body>
+</html>
