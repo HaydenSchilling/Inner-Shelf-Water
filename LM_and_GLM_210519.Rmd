@@ -21,10 +21,10 @@ lapply(c("R.matlab","knitr","RODBC","MASS",
          "ncdf4", "geosphere", "maptools", "sp", "oce", "pracma",
          "gridExtra", "maps", "mapdata", "sp", "rgeos", "lubridate"), require, character.only = TRUE)
 #Source Highland Statistics code
-source("2code/HighstatLibV6.R")
+source("code/HighstatLibV6.R")
 
 #read data
-df	<- read.csv("1data/CleanedData_060519.csv", header=TRUE, sep=",", dec=".", fill=TRUE)
+df	<- read.csv("Data/CleanedData_060519.csv", header=TRUE, sep=",", dec=".", fill=TRUE)
 ```
 
 ```{r, fig.height = 8, fig.width =10}
