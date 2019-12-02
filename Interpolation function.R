@@ -110,11 +110,5 @@ dev.off()
 #   geom_tile() + stat_contour(colour = "white")
 # p2
 
-# 
-# ## Maybe try:
-install.packages("ContourFunctions")
-# 
-library(ContourFunctions)
 
-cf_data(mydata2$Lon, -mydata2$Depth, mydata2$NBSSSlope)
 

@@ -1,6 +1,6 @@
 ### ADCP plots
 
-install.packages("akima")
+#install.packages("akima")
 
 library(akima)
 
@@ -8,14 +8,75 @@ mydata <- read.csv("Data/ADP_tows_final_300419.csv")
 str(mydata)
 head(mydata)
 
-vars = c("U", "V")
+
+### Get distance from shore
+library(geosphere)
+
+mydata$Distance_Coast = 0
+for (i in 1:nrow(mydata)){
+  if (mydata$OPC_site[i] == "CB") {
+    mydata$Distance_Coast[i] = distm(c(153.638598, -28.635808), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
+  }
+  if (mydata$OPC_site[i] == "DH") {
+    mydata$Distance_Coast[i] = distm(c(152.782016, -31.749982), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
+  }
+  if (mydata$OPC_site[i] == "EH") {
+    mydata$Distance_Coast[i] = distm(c(153.481200, -28.994824), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
+  }
+  if (mydata$OPC_site[i] == "NS") {
+    mydata$Distance_Coast[i] = distm(c(153.224309, -29.995614), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
+  }
+}
+
+ 
+# velocity rotation (to align with coastline):
+# # Cb = 356 degree, EH = 13 degree, NS = 15 degree, DH = 19 degree
+
+## Matlab code from amandine 
+##  rot_deg_angle=-22 # to change
+#  
+#
+## UCUR_shore=cosd(rot_deg_angle).*UCUR+sind(rot_deg_angle).*VCUR; % across-shelf 
+## VCUR_shore=-sind(rot_deg_angle).*UCUR+cosd(rot_deg_angle).*VCUR; % along-shelf
+
+mydata$U_shore = 0
+mydata$V_shore = 0
+for (i in 1:nrow(mydata)){
+  if (mydata$OPC_site[i] == "CB") {
+    rot_deg_angle= -356
+    mydata$U_shore[i] = cos(rot_deg_angle*pi/180)*mydata$U[i] + sin(rot_deg_angle*pi/180)*mydata$V[i]
+    mydata$V_shore[i] = sin(rot_deg_angle*pi/180)*mydata$U[i] + cos(rot_deg_angle*pi/180)*mydata$V[i]
+  }
+  if (mydata$OPC_site[i] == "DH") {
+    rot_deg_angle= -19
+    mydata$U_shore[i] = cos(rot_deg_angle*pi/180)*mydata$U[i] + sin(rot_deg_angle*pi/180)*mydata$V[i]
+    mydata$V_shore[i] = sin(rot_deg_angle*pi/180)*mydata$U[i] + cos(rot_deg_angle*pi/180)*mydata$V[i]
+  }
+  if (mydata$OPC_site[i] == "EH") {
+    rot_deg_angle= -13
+    mydata$U_shore[i] = cos(rot_deg_angle*pi/180)*mydata$U[i] + sin(rot_deg_angle*pi/180)*mydata$V[i]
+    mydata$V_shore[i] = sin(rot_deg_angle*pi/180)*mydata$U[i] + cos(rot_deg_angle*pi/180)*mydata$V[i]
+  }
+  if (mydata$OPC_site[i] == "NS") {
+    rot_deg_angle= -15
+    mydata$U_shore[i] = cos(rot_deg_angle*pi/180)*mydata$U[i] + sin(rot_deg_angle*pi/180)*mydata$V[i]
+    mydata$V_shore[i] = sin(rot_deg_angle*pi/180)*mydata$U[i] + cos(rot_deg_angle*pi/180)*mydata$V[i]
+  }
+}
+
+
+
+
+vars = c("U_shore", "V_shore", "U", "V")
 sites = c("DH", "NS", "EH", "CB")
 
 #get(vars)
 
+library(ggplot2)
+
 for (i in vars){
   
-  p1 <- ggplot(mydata, aes(x = Lon, y = -Depth, col = get(i))) + geom_point() +
+  p1 <- ggplot(mydata, aes(x = Distance_Coast, y = -Depth, col = get(i))) + geom_point() +
     facet_wrap(~OPC_site, scales = "free_x") + theme_bw()
   print(p1)
 }
@@ -27,14 +88,14 @@ for (j in sites){
   mydata2 <- subset(mydata, OPC_site == j)
   for (i in vars){
     #fit1 <- interp(x = mydata2$long3, y = -mydata2$Depth, z = mydata2$CTD.Sal)
-    fit1 <- interp(x = mydata2$Lon, y = -mydata2$Depth, z = mydata2[[i]])
+    fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = mydata2[[i]])
     pdf(paste0('plots/ADCP/ADCP_',j,"_",i,'.pdf'), width=10, height=5)
     print(filled.contour(fit1, color.palette = function(n) hcl.colors(n, "RdBu", rev = TRUE),
-                         zlim = c(min(mydata[[i]]), max(mydata[[i]])), plot.title = title(main = c(j, i))))
+                         zlim = c(-2,2), plot.title = title(main = c(j, i))))
     dev.off()
     png(paste0('plots/ADCP/ADCP_',j,"_",i,'.png'), width=6000, height=3000, res = 600)
     print(filled.contour(fit1, color.palette = function(n) hcl.colors(n, "RdBu", rev = TRUE), 
-                         zlim = c(min(mydata[[i]]), max(mydata[[i]])), plot.title = title(main = c(j, i))))
+                         zlim = c(-2,2), plot.title = title(main = c(j, i))))
     dev.off()
     pdf(paste0('plots/ADCP/ADCP_',j,"_",i,'_lines.pdf'), width=10, height=5)
     print(contour(fit1, plot.title = title(main = c(j, i))))
