@@ -55,7 +55,7 @@ hist(mydata2$Abundance)
 # # variables to loop through
 # vars = c("Temp", "Salt","GeoMn")# "NBSS.Slope",
 # #sites to loop through
-# sites <- levels(mydata$site)
+sites <- levels(mydata$site)
 # 
 # # # Testing
 # # for (i in vars){
@@ -248,7 +248,8 @@ for (j in sites){
   ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = NBSSSlope)) + 
     geom_tile(aes(fill = NBSSSlope)) +
     geom_contour(colour = "white") + #, binwidth = 0.125
-    scale_fill_distiller(palette = "YlOrRd", direction = 1) + 
+    scale_fill_distiller(palette = "Spectral", direction = 1, # "YlOrRd"
+                         limits = c(min(mydata$NBSSSlope, na.rm = TRUE), max(mydata$NBSSSlope, na.rm = TRUE))) + 
     geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) + 
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) +
     ggtitle(paste0("NBSS Slope at ", j))
@@ -276,7 +277,7 @@ for (j in sites){
   ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = ParetoSlope)) + 
     geom_tile(aes(fill = ParetoSlope)) +
     geom_contour(colour = "white") + #, binwidth = 0.125
-    scale_fill_distiller(palette = "YlOrRd", direction = 1, limits = c(min(mydata$ParetoSlope), max(mydata$ParetoSlope))) + 
+    scale_fill_distiller(palette = "Spectral", direction = 1, limits = c(min(mydata$ParetoSlope), max(mydata$ParetoSlope))) + 
     geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) + 
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) +
     ggtitle(paste0("Pareto Slope at ", j))
