@@ -28,28 +28,46 @@ library(geosphere)
 mydata$Distance_Coast = 0
 for (i in 1:nrow(mydata)){
   if (mydata$site[i] == "CapeByron") {
-    mydata$Distance_Coast[i] = distm(c(153.638598, -28.635808), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
+    mydata$Distance_Coast[i] = distm(c(153.58, -28.6), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
   }
   if (mydata$site[i] == "DiamondHead") {
-    mydata$Distance_Coast[i] = distm(c(152.782016, -31.749982), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
+    mydata$Distance_Coast[i] = distm(c(152.75, -31.8), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
   }
   if (mydata$site[i] == "EvansHead") {
-    mydata$Distance_Coast[i] = distm(c(153.481200, -28.994824), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
+    mydata$Distance_Coast[i] = distm(c(153.48, -29.0), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
   }
   if (mydata$site[i] == "NorthSolitary") {
-    mydata$Distance_Coast[i] = distm(c(153.224309, -29.995614), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
+    mydata$Distance_Coast[i] = distm(c(153.23, -30.0), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
   }
 }
 
 
-p1 <- ggplot(mydata, aes(x = Lon, y = -Depth, col = Abundance)) + geom_point() +
-  facet_wrap(~site, scales = "free_x") + theme_bw() + scale_color_gradient2(low = "blue", high = "red", mid = "white")
-p1
+### Get Bathymetry and add distance from coast
+Bathy <- read.csv("Data/Transect Bathymetry.csv", header = T)
+Bathy <- subset(Bathy, Bathymetry <= 0 & Bathymetry > -200)
 
-mydata2 <- filter(mydata, site == "DiamondHead")
-fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = Abundance, nx = 100, ny = 100))
-mydata2 <- mydata2 %>% drop_na(Abundance, Depth) %>% filter(Abundance != Inf)
-hist(mydata2$Abundance)
+
+Bathy$Distance_Coast = 0
+for (i in 1:nrow(Bathy)){
+  if (Bathy$site[i] == "CapeByron") {
+    Bathy$Distance_Coast[i] = distm(c(153.58, -28.6), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+  if (Bathy$site[i] == "DiamondHead") {
+    Bathy$Distance_Coast[i] = distm(c(152.75, -31.8), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+  if (Bathy$site[i] == "EvansHead") {
+    Bathy$Distance_Coast[i] = distm(c(153.48, -29.0), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+  if (Bathy$site[i] == "NorthSolitary") {
+    Bathy$Distance_Coast[i] = distm(c(153.23, -30.0), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+}
+
+p1 <- ggplot(mydata, aes(x = Lon, y = -Depth)) + geom_point(aes(col = Abundance)) +
+  facet_wrap(~site, scales = "free_x") + theme_bw() +
+  geom_line(data= Bathy, aes(x = Longitude, y = Bathymetry)) +
+  scale_color_gradient2(low = "blue", high = "red", mid = "white")
+p1
 
 
 # # variables to loop through
@@ -116,7 +134,7 @@ sites <- levels(mydata$site)
 for (j in sites){
   mydata2 <- mydata %>% 
     filter(site == j & is.na(Depth)==FALSE & is.na(Biomass)==FALSE)
-  
+  Bathy2 <- filter(Bathy, site == j)
   #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
   #               nx = 100, ny = 100)
   fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = log10(Biomass), nx = 100, ny = 100))
@@ -130,11 +148,13 @@ for (j in sites){
     geom_tile(aes(fill = log10(Biomass))) +
     geom_contour(colour = "white", binwidth = 0.125) + 
     scale_fill_distiller(palette = "YlOrRd", direction = 1, limits = c(-0.25,  0.75)) + 
-    geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) + 
-    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) +
+    geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
+    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
     ggtitle(paste0("Biomass at ", j))
   
-  ggsave(paste0('plots/zoop/TT',j,"_Biomass",'.pdf'),width = 10, height = 5)
+  ggsave(paste0('plots/zoop/',j,"_Biomass",'.pdf'),width = 10, height = 5)
+  ggsave(paste0('plots/zoop/',j,"_Biomass",'.png'),width = 10, height = 5, dpi = 600)
   
   # pdf(paste0('plots/zoop/',j,"_Biomass",'.pdf'), width=10, height=5)
   # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
@@ -153,6 +173,7 @@ for (j in sites){
 for (j in sites){
   mydata2 <- filter(mydata, site == j)
   mydata2 <-  mydata2 %>% drop_na(Abundance, Depth) %>% filter(Abundance != Inf)
+  Bathy2 <- filter(Bathy, site == j)
   
   #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
   #               nx = 100, ny = 100)
@@ -167,9 +188,10 @@ for (j in sites){
     geom_tile(aes(fill = Abundance)) +
     geom_contour(colour = "white") + #, binwidth = 0.125
     scale_fill_distiller(palette = "YlOrRd", direction = 1) + 
-    geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) + 
-    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) +
-    ggtitle(paste0("Abundance at ", j))
+    geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) +
+    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
+      ggtitle(paste0("Abundance at ", j))
   
   ggsave(paste0('plots/zoop/',j,"_Abundance",'.pdf'),width = 10, height = 5)
   ggsave(paste0('plots/zoop/',j,"_Abundance",'.png'),width = 10, height = 5, dpi = 600)
@@ -187,28 +209,29 @@ for (j in sites){
 
 
 
-### Mormalised Geo_Mn Size #  done
-#mydata <- na.omit(mydata) # check this
-for (j in sites){
-  mydata2 <- subset(mydata, site == j)
-  
-  fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$depth, z = mydata2$Norm.GeoMnESD)
-  pdf(paste0('plots/zoop/',j,"_Normalised_GeoMnSize",'.pdf'), width=10, height=5)
-  print(filled.contour(fit1, zlim = c(min(mydata$Norm.GeoMnESD), max(mydata$Norm.GeoMnESD))),
-        plot.title = title(main = c(j)))
-  dev.off()
-  png(paste0('plots/zoop/',j,"_Normalised_GeoMnSize",'.png'), width=6000, height=3000, res = 600)
-  print(filled.contour(fit1, zlim = c(min(mydata$Norm.GeoMnESD), max(mydata$Norm.GeoMnESD)),
-                       plot.title = title(main = c(j))))
-  dev.off()
-}
-
+# ### Mormalised Geo_Mn Size #  done
+# #mydata <- na.omit(mydata) # check this
+# for (j in sites){
+#   mydata2 <- subset(mydata, site == j)
+#   
+#   fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$depth, z = mydata2$Norm.GeoMnESD)
+#   pdf(paste0('plots/zoop/',j,"_Normalised_GeoMnSize",'.pdf'), width=10, height=5)
+#   print(filled.contour(fit1, zlim = c(min(mydata$Norm.GeoMnESD), max(mydata$Norm.GeoMnESD))),
+#         plot.title = title(main = c(j)))
+#   dev.off()
+#   png(paste0('plots/zoop/',j,"_Normalised_GeoMnSize",'.png'), width=6000, height=3000, res = 600)
+#   print(filled.contour(fit1, zlim = c(min(mydata$Norm.GeoMnESD), max(mydata$Norm.GeoMnESD)),
+#                        plot.title = title(main = c(j))))
+#   dev.off()
+# }
+# 
 
 ### Geo_Mn Size #  done
 ### interpoLation and plots
 for (j in sites){
   mydata2 <- filter(mydata, site == j)
   mydata2 <-  mydata2 %>% drop_na(GeoMn, Depth) %>% filter(GeoMn != Inf)
+  Bathy2 <- filter(Bathy, site == j)
   
   #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
   #               nx = 100, ny = 100)
@@ -223,8 +246,9 @@ for (j in sites){
     geom_tile(aes(fill = GeoMn)) +
     geom_contour(colour = "white") + #, binwidth = 0.125
     scale_fill_distiller(palette = "YlOrRd", direction = 1) + 
-    geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) + 
-    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) +
+    geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) +
+    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
     ggtitle(paste0("Geometric Mean Size at ", j))
   
   ggsave(paste0('plots/zoop/',j,"_GeoMn",'.pdf'),width = 10, height = 5)
@@ -239,6 +263,7 @@ for (j in sites){
   #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
   #               nx = 100, ny = 100)
   fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = NBSSSlope, nx = 100, ny = 100))
+  Bathy2 <- filter(Bathy, site == j)
   
   df <- melt(fit1$z, na.rm = TRUE)
   names(df) <- c("x", "y", "NBSSSlope")
@@ -250,8 +275,9 @@ for (j in sites){
     geom_contour(colour = "white") + #, binwidth = 0.125
     scale_fill_distiller(palette = "Spectral", direction = 1, # "YlOrRd"
                          limits = c(min(mydata$NBSSSlope, na.rm = TRUE), max(mydata$NBSSSlope, na.rm = TRUE))) + 
-    geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) + 
-    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) +
+    geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) +
+    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
     ggtitle(paste0("NBSS Slope at ", j))
   
   ggsave(paste0('plots/zoop/',j,"_NBSS_Slope",'.pdf'),width = 10, height = 5)
@@ -264,7 +290,7 @@ for (j in sites){
 for (j in sites){
   mydata2 <- filter(mydata, site == j)
   mydata2 <-  mydata2 %>% drop_na(ParetoSlope) %>% filter(ParetoSlope != Inf)
-  
+  Bathy2 <- filter(Bathy, site == j)
   #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
   #               nx = 100, ny = 100)
   fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = ParetoSlope, nx = 100, ny = 100))
@@ -278,8 +304,9 @@ for (j in sites){
     geom_tile(aes(fill = ParetoSlope)) +
     geom_contour(colour = "white") + #, binwidth = 0.125
     scale_fill_distiller(palette = "Spectral", direction = 1, limits = c(min(mydata$ParetoSlope), max(mydata$ParetoSlope))) + 
-    geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) + 
-    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth)) +
+    geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth),alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) +
+    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
     ggtitle(paste0("Pareto Slope at ", j))
   
   ggsave(paste0('plots/zoop/',j,"_Pareto_Slope",'.pdf'),width = 10, height = 5)
@@ -292,11 +319,65 @@ for (j in sites){
 #install.packages("sommer")
 library(sommer) # for jet colour scheme
 
-mydata3 <- subset(mydata, Depth > 10)
+#mydata3 <- subset(mydata, Depth > 10)
 
-pTS <- ggplot(mydata3, aes(x = Salt, y = Temp, col = log10(Biomass))) + geom_point() + facet_wrap(~site) + 
+pTS <- ggplot(mydata, aes(x = Salt, y = Temp, col = log10(Biomass))) + geom_point() + facet_wrap(~site) + 
   theme_classic() + scale_color_gradientn(colours = jet.colors(100))
 pTS
 
 ggsave("plots/zoop/TS plot by log10 biomass.pdf", width=10, height=8)
 ggsave("plots/zoop/TS plot by log10 biomass.png", width=10, height=8, dpi = 600)
+
+
+pTSL <- ggplot(mydata, aes(x = Salt, y = Temp, col = Depth)) + geom_point(alpha = 0.5) + facet_wrap(~site) + 
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100))
+pTSL
+
+ggsave("plots/zoop/TS plot by Depth.pdf", width=10, height=8)
+ggsave("plots/zoop/TS plot by Depth.png", width=10, height=8, dpi = 600)
+
+pTSL <- ggplot(mydata, aes(x = Salt, y = Temp, col = Depth)) + geom_point(alpha = 0.5) + facet_wrap(~site) + 
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100))
+pTSL
+
+ggsave("plots/zoop/TS plot by Depth.pdf", width=10, height=8)
+ggsave("plots/zoop/TS plot by Depth.png", width=10, height=8, dpi = 600)
+
+
+### Now do only top 50m
+mydata2 <- subset(mydata, Depth < 51)
+
+pTS <- ggplot(mydata2, aes(x = Salt, y = Temp, col = log10(Biomass))) + geom_point() + facet_wrap(~site) + 
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100))
+pTS
+
+ggsave("plots/zoop/TS plot by log10 biomass top 50.pdf", width=10, height=8)
+ggsave("plots/zoop/TS plot by log10 biomass top 50.png", width=10, height=8, dpi = 600)
+
+
+pTSL <- ggplot(mydata2, aes(x = Salt, y = Temp, col = Depth)) + geom_point(alpha = 0.5) + facet_wrap(~site) + 
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100))
+pTSL
+
+ggsave("plots/zoop/TS plot by Depth top 50.pdf", width=10, height=8)
+ggsave("plots/zoop/TS plot by Depth top 50.png", width=10, height=8, dpi = 600)
+
+### Now do only below 50m
+mydata2 <- subset(mydata, Depth >= 51)
+
+pTS <- ggplot(mydata2, aes(x = Salt, y = Temp, col = log10(Biomass))) + geom_point() + facet_wrap(~site) + 
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100))
+pTS
+
+ggsave("plots/zoop/TS plot by log10 biomass below 50.pdf", width=10, height=8)
+ggsave("plots/zoop/TS plot by log10 biomass below 50.png", width=10, height=8, dpi = 600)
+
+
+pTSL <- ggplot(mydata2, aes(x = Salt, y = Temp, col = Depth)) + geom_point(alpha = 0.5) + facet_wrap(~site) + 
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100))
+pTSL
+
+ggsave("plots/zoop/TS plot by Depth below 50.pdf", width=10, height=8)
+ggsave("plots/zoop/TS plot by Depth below 50.png", width=10, height=8, dpi = 600)
+
+

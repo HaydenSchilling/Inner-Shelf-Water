@@ -25,10 +25,10 @@ p1 <- ggplot(Bdat2, aes(x= Longitude, y = Bathymetry)) + geom_line() +
 p1
 
 
-Bdat2$Site <- as.character("")
-Bdat2$Site[Bdat2$Latitude  == "-31.8"] <- "DiamondHead"
-Bdat2$Site[Bdat2$Latitude  == "-30"] <- "NorthSolitary"
-Bdat2$Site[Bdat2$Latitude  == "-29"] <- "EvansHead"
-Bdat2$Site[Bdat2$Latitude  == "-28.6"] <- "CapeByron"
+Bdat2$site <- as.character("")
+Bdat2$site[Bdat2$Latitude  == "-31.8"] <- "DiamondHead"
+Bdat2$site[Bdat2$Latitude  == "-30"] <- "NorthSolitary"
+Bdat2$site[Bdat2$Latitude  == "-29"] <- "EvansHead"
+Bdat2$site[Bdat2$Latitude  == "-28.6"] <- "CapeByron"
 
 write.csv(Bdat2, "Data/Transect Bathymetry.csv", row.names = FALSE)

@@ -3,4 +3,4 @@
 .Rproj.user
 /plots/*
 /resources/Oceanographic*
-.Rhistory
+*.Rhistory

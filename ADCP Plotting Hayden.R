@@ -15,18 +15,41 @@ library(geosphere)
 mydata$Distance_Coast = 0
 for (i in 1:nrow(mydata)){
   if (mydata$OPC_site[i] == "CB") {
-    mydata$Distance_Coast[i] = distm(c(153.638598, -28.635808), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
+    mydata$Distance_Coast[i] = distm(c(153.58, -28.6), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
   }
   if (mydata$OPC_site[i] == "DH") {
-    mydata$Distance_Coast[i] = distm(c(152.782016, -31.749982), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
+    mydata$Distance_Coast[i] = distm(c(152.75, -31.8), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
   }
   if (mydata$OPC_site[i] == "EH") {
-    mydata$Distance_Coast[i] = distm(c(153.481200, -28.994824), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
+    mydata$Distance_Coast[i] = distm(c(153.48, -29.0), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
   }
   if (mydata$OPC_site[i] == "NS") {
-    mydata$Distance_Coast[i] = distm(c(153.224309, -29.995614), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
+    mydata$Distance_Coast[i] = distm(c(153.23, -30.0), c(mydata$Lon[i], mydata$Lat[i]), fun = distHaversine)
   }
 }
+
+
+### Get Bathymetry and add distance from coast
+Bathy <- read.csv("Data/Transect Bathymetry.csv", header = T)
+Bathy <- subset(Bathy, Bathymetry <= 0 & Bathymetry > -200)
+
+
+Bathy$Distance_Coast = 0
+for (i in 1:nrow(Bathy)){
+  if (Bathy$site[i] == "CapeByron") {
+    Bathy$Distance_Coast[i] = distm(c(153.58, -28.6), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+  if (Bathy$site[i] == "DiamondHead") {
+    Bathy$Distance_Coast[i] = distm(c(152.75, -31.8), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+  if (Bathy$site[i] == "EvansHead") {
+    Bathy$Distance_Coast[i] = distm(c(153.48, -29.0), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+  if (Bathy$site[i] == "NorthSolitary") {
+    Bathy$Distance_Coast[i] = distm(c(153.23, -30.0), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+}
+
 
  
 # velocity rotation (to align with coastline):
@@ -67,8 +90,9 @@ for (i in 1:nrow(mydata)){
 
 
 
-vars = c("U_shore", "V_shore", "U", "V")
+#vars = c("U_shore", "V_shore", "U", "V")
 sites = c("DH", "NS", "EH", "CB")
+sitesB = c("DiamondHead", "NorthSolitary", "EvansHead", "CapeByron")
 
 #get(vars)
 
@@ -83,30 +107,104 @@ for (i in vars){
 mydata2 <- subset(mydata, OPC_site == "EH")
 str(mydata2)
 
+## Base R code
+# 
+# for (j in sites){
+#   mydata2 <- subset(mydata, OPC_site == j)
+#   for (i in vars){
+#     #fit1 <- interp(x = mydata2$long3, y = -mydata2$Depth, z = mydata2$CTD.Sal)
+#     fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = mydata2[[i]])
+#     pdf(paste0('plots/ADCP/ADCP_',j,"_",i,'.pdf'), width=10, height=5)
+#     print(filled.contour(fit1, color.palette = function(n) hcl.colors(n, "RdBu", rev = TRUE),
+#                          zlim = c(-2,2), plot.title = title(main = c(j, i))))
+#     dev.off()
+#     png(paste0('plots/ADCP/ADCP_',j,"_",i,'.png'), width=6000, height=3000, res = 600)
+#     print(filled.contour(fit1, color.palette = function(n) hcl.colors(n, "RdBu", rev = TRUE), 
+#                          zlim = c(-2,2), plot.title = title(main = c(j, i))))
+#     dev.off()
+#     pdf(paste0('plots/ADCP/ADCP_',j,"_",i,'_lines.pdf'), width=10, height=5)
+#     print(contour(fit1, plot.title = title(main = c(j, i))))
+#     dev.off()
+#     png(paste0('plots/ADCP/ADCP_',j,"_",i,'_lines.png'), width=6000, height=3000, res = 600)
+#     print(contour(fit1, plot.title = title(main = c(j, i))))
+#     dev.off()
+#   }
+# }
 
-for (j in sites){
-  mydata2 <- subset(mydata, OPC_site == j)
-  for (i in vars){
-    #fit1 <- interp(x = mydata2$long3, y = -mydata2$Depth, z = mydata2$CTD.Sal)
-    fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = mydata2[[i]])
-    pdf(paste0('plots/ADCP/ADCP_',j,"_",i,'.pdf'), width=10, height=5)
-    print(filled.contour(fit1, color.palette = function(n) hcl.colors(n, "RdBu", rev = TRUE),
-                         zlim = c(-2,2), plot.title = title(main = c(j, i))))
-    dev.off()
-    png(paste0('plots/ADCP/ADCP_',j,"_",i,'.png'), width=6000, height=3000, res = 600)
-    print(filled.contour(fit1, color.palette = function(n) hcl.colors(n, "RdBu", rev = TRUE), 
-                         zlim = c(-2,2), plot.title = title(main = c(j, i))))
-    dev.off()
-    pdf(paste0('plots/ADCP/ADCP_',j,"_",i,'_lines.pdf'), width=10, height=5)
-    print(contour(fit1, plot.title = title(main = c(j, i))))
-    dev.off()
-    png(paste0('plots/ADCP/ADCP_',j,"_",i,'_lines.png'), width=6000, height=3000, res = 600)
-    print(contour(fit1, plot.title = title(main = c(j, i))))
-    dev.off()
-  }
+
+### V_Shore interpoLation and plots
+for (j in 1:length(sites)){
+  mydata2 <- mydata %>% 
+    filter(OPC_site == sites[j] & is.na(Depth)==FALSE)
+  Bathy2 <- filter(Bathy, site == sitesB[j])
+  #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
+  #               nx = 100, ny = 100)
+  fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = V_shore, nx = 100, ny = 100))
+  
+  df <- melt(fit1$z, na.rm = TRUE)
+  names(df) <- c("x", "y", "V_shore")
+  df$Distance_Coast <- fit1$x[df$x]
+  df$Depth <- fit1$y[df$y]
+  
+  ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = V_shore)) + 
+    geom_tile(data = df, aes(fill = V_shore)) +
+    geom_contour(colour = "white", binwidth = 0.125) + 
+    scale_fill_distiller(palette = "RdBu", direction = -1, limits = c(-2,  2)) + 
+    #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
+    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
+    ggtitle(paste0("V_shore at ", sites[j]))
+  
+  ggsave(paste0('plots/ADCP/',sites[j],"_V_shore",'.pdf'),width = 10, height = 5)
+  ggsave(paste0('plots/ADCP/',sites[j],"_V_shore",'.png'),width = 10, height = 5, dpi = 600)
+  
+  # pdf(paste0('plots/zoop/',j,"_Biomass",'.pdf'), width=10, height=5)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+  # png(paste0('plots/zoop/',j,"_Biomass",'.png'), width=6000, height=3000, res = 600)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
 }
 
-filled.contour(fit1, color.palette = function(n) hcl.colors(n, "RdBu", rev = TRUE))
+
+### U_Shore interpoLation and plots
+for (j in 1:length(sites)){
+  mydata2 <- mydata %>% 
+    filter(OPC_site == sites[j] & is.na(Depth)==FALSE)
+  Bathy2 <- filter(Bathy, site == sitesB[j])
+  #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
+  #               nx = 100, ny = 100)
+  fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = U_shore, nx = 100, ny = 100))
+  
+  df <- melt(fit1$z, na.rm = TRUE)
+  names(df) <- c("x", "y", "U_shore")
+  df$Distance_Coast <- fit1$x[df$x]
+  df$Depth <- fit1$y[df$y]
+  
+  ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = U_shore)) + 
+    geom_tile(data = df, aes(fill = U_shore)) +
+    geom_contour(colour = "white", binwidth = 0.125) + 
+    scale_fill_distiller(palette = "RdBu", direction = -1, limits = c(-0.5,  0.5)) + 
+    #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
+    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
+    ggtitle(paste0("U_shore at ", sites[j]))
+  
+  ggsave(paste0('plots/ADCP/',sites[j],"_U_shore",'.pdf'),width = 10, height = 5)
+  ggsave(paste0('plots/ADCP/',sites[j],"_U_shore",'.png'),width = 10, height = 5, dpi = 600)
+  
+  # pdf(paste0('plots/zoop/',j,"_Biomass",'.pdf'), width=10, height=5)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+  # png(paste0('plots/zoop/',j,"_Biomass",'.png'), width=6000, height=3000, res = 600)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+}
+
 
 
 #### Quiver plots

@@ -5,14 +5,60 @@
 library(akima)
 library(ggplot2)
 library(reshape2)
+library(tidyverse)
 
 mydata <- read.csv("Data/HYD cleaned 080419.csv")
 str(mydata)
 head(mydata)
+
+### Get distance from shore
+library(geosphere)
+
+mydata$Distance_Coast = 0
+for (i in 1:nrow(mydata)){
+  #if (mydata$OPC_site[i] == "CB") {
+  #  mydata$Distance_Coast[i] = distm(c(153.58, -28.6), c(mydata$long3[i], mydata$lat3[i]), fun = distHaversine)
+  #}
+  if (mydata$OPC_site[i] == "DH") {
+    mydata$Distance_Coast[i] = distm(c(152.75, -31.8), c(mydata$long3[i], mydata$lat3[i]), fun = distHaversine)
+  }
+  if (mydata$OPC_site[i] == "EH") {
+    mydata$Distance_Coast[i] = distm(c(153.48, -29.0), c(mydata$long3[i], mydata$lat3[i]), fun = distHaversine)
+  }
+  if (mydata$OPC_site[i] == "NS") {
+    mydata$Distance_Coast[i] = distm(c(153.23, -30.0), c(mydata$long3[i], mydata$lat3[i]), fun = distHaversine)
+  }
+}
+
+
+
+### Get Bathymetry and add distance from coast
+Bathy <- read.csv("Data/Transect Bathymetry.csv", header = T)
+Bathy <- subset(Bathy, Bathymetry <= 0 & Bathymetry > -200)
+
+
+Bathy$Distance_Coast = 0
+for (i in 1:nrow(Bathy)){
+  if (Bathy$site[i] == "CapeByron") {
+    Bathy$Distance_Coast[i] = distm(c(153.58, -28.6), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+  if (Bathy$site[i] == "DiamondHead") {
+    Bathy$Distance_Coast[i] = distm(c(152.75, -31.8), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+  if (Bathy$site[i] == "EvansHead") {
+    Bathy$Distance_Coast[i] = distm(c(153.48, -29.0), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+  if (Bathy$site[i] == "NorthSolitary") {
+    Bathy$Distance_Coast[i] = distm(c(153.23, -30.0), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+}
+
+
 # variables to loop through
 vars = c("CTD.Sal", "CTD.Temp", "Oxygen", "Silicate","Nitrate")
 #sites to loop through
 sites = c("DH", "NS", "EH")
+sitesB = c("DiamondHead", "NorthSolitary", "EvansHead")
 
 # # Testing
 # for (i in vars){
@@ -46,69 +92,58 @@ for (j in sites){
     dev.off()
   }
 }
-str(fit1)
 
 
-print(filled.contour(fit1, plot.title = title(main = i)))
 
 
-## Now for zooplankton
-
-mydata <- read.csv("Data/OPC_CTD 120419.csv", header = T)
-
-str(mydata)
-table(mydata$site)
-library(akima)
-library(ggplot2)
-
-vars = c("NBSSSlope", "NBSSIntercept", "NBSSRsq", "Biomass","GeoMn")
-sites = c("DiamondHead", "CapeByron", "NorthSolitary", "EvansHead")
-
-#get(vars)
-
-for (i in vars){
+### CTD.Sal interpoLation and plots ---- need to fix bathymetry
+for (j in 1:length(sites)){
+  mydata2 <- mydata %>% 
+    filter(OPC_site == sites[j] & is.na(Depth)==FALSE)
+  Bathy2 <- filter(Bathy, site == sitesB[j])
+  #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
+  #               nx = 100, ny = 100)
+  fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = CTD.Sal, nx = 100, ny = 100))
   
-  p1 <- ggplot(mydata, aes(x = Lon, y = -Depth, col = get(i))) + geom_point() +
-    facet_wrap(~site, scales = "free_x") + theme_bw()
-  print(p1)
+  df <- melt(fit1$z, na.rm = TRUE)
+  names(df) <- c("x", "y", "CTD.Sal")
+  df$Distance_Coast <- fit1$x[df$x]
+  df$Depth <- fit1$y[df$y]
+  
+  ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = CTD.Sal)) + 
+    geom_tile(data = df, aes(fill = CTD.Sal)) +
+    geom_contour(colour = "white", binwidth = 0.125) + 
+    scale_fill_distiller(palette = "RdBu", direction = -1, limits = c(min(mydata$CTD.Sal),max(mydata$CTD.Sal))) + 
+    #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
+    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
+    ggtitle(paste0("CTD.Sal at ", sites[j]))
+  
+  ggsave(paste0('plots/CTD/',sites[j],"_CTD_Sal",'.pdf'),width = 10, height = 5)
+  ggsave(paste0('plots/CTD/',sites[j],"_CTD_Sal",'.png'),width = 10, height = 5, dpi = 600)
+  
+  # pdf(paste0('plots/zoop/',j,"_Biomass",'.pdf'), width=10, height=5)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+  # png(paste0('plots/zoop/',j,"_Biomass",'.png'), width=6000, height=3000, res = 600)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
 }
-mydata2 <- subset(mydata, OPC_site == "EH")
-str(mydata2)
 
-library(tidyr)
+### TS Plots
+#install.packages("sommer")
+library(sommer) # for jet colour scheme
 
-for (j in sites){
-  mydata2 <- subset(mydata, site == j)
-  for (i in vars){
-    mydata2 <- mydata2 %>% drop_na(i) # removes NA in the variable we are interested in
-    #fit1 <- interp(x = mydata2$long3, y = -mydata2$Depth, z = mydata2$CTD.Sal)
-    fit1 <- interp(x = mydata2$Lon, y = -mydata2$Depth, z = mydata2[[i]])
-    pdf(paste0('plots/zoop/',j,"_",i,'.pdf'), width=10, height=5)
-    print(filled.contour(fit1, plot.title = title(main = c(j, i))))
-    dev.off()
-    pdf(paste0('plots/zoop/',j,"_",i,'_lines.pdf'), width=10, height=5)
-    print(contour(fit1, plot.title = title(main = c(j, i))))
-    dev.off()
-  }
-}
+head(mydata)
 
-### Test a single OPC variable (biomass but logged)
+#mydata3 <- subset(mydata, Depth > 10)
 
-fit1 <- interp(x = mydata2$Lon, y = -mydata2$Depth, z = log10(mydata2$Biomass))
-pdf(paste0('plots/zoop/',j,"_",i,'.pdf'), width=10, height=5)
-print(filled.contour(fit1, plot.title = title(main = c(j, i))))
-dev.off()
+pTS <- ggplot(mydata, aes(x = CTD.Sal, y = CTD.Temp, col = Nitrate)) + geom_point() + facet_wrap(~OPC_site) + 
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100))
+pTS
 
-
-# ### TO do in ggplot
-# 
-# 
-# d2 <- melt(fit1$z, na.rm = TRUE, value.name = "Nitrate")
-# names(d2) <- c("Longitude", "Depth", "Nitrate")
-# 
-# p2 <- ggplot(d2, aes(x = Longitude, y = Depth, z=Nitrate, fill = Nitrate)) + 
-#   geom_tile() + stat_contour(colour = "white")
-# p2
-
-
+ggsave("plots/zoop/TS plot by Nitrate.pdf", width=10, height=8)
+ggsave("plots/zoop/TS plot by Nitrate.png", width=10, height=8, dpi = 600)
 
