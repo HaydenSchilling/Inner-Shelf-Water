@@ -34,7 +34,7 @@ for (i in 1:nrow(mydata)){
 
 ### Get Bathymetry and add distance from coast
 Bathy <- read.csv("Data/Transect Bathymetry.csv", header = T)
-Bathy <- subset(Bathy, Bathymetry <= 0 & Bathymetry > -200)
+Bathy <- subset(Bathy, Bathymetry <= 0 ) # & Bathymetry > -200
 
 
 Bathy$Distance_Coast = 0
@@ -96,7 +96,7 @@ for (j in sites){
 
 
 
-### CTD.Sal interpoLation and plots ---- need to fix bathymetry
+### CTD.Sal interpoLation and plots ---- need to fix bathymetry?
 for (j in 1:length(sites)){
   mydata2 <- mydata %>% 
     filter(OPC_site == sites[j] & is.na(Depth)==FALSE)
@@ -117,10 +117,87 @@ for (j in 1:length(sites)){
     #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
     geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
+    coord_cartesian(ylim=c(-(max(mydata2$Depth)), 0), xlim = c(0, max(mydata2$Distance_Coast)))+ # zooms in on the data without truncating data off the screen
     ggtitle(paste0("CTD.Sal at ", sites[j]))
   
   ggsave(paste0('plots/CTD/',sites[j],"_CTD_Sal",'.pdf'),width = 10, height = 5)
   ggsave(paste0('plots/CTD/',sites[j],"_CTD_Sal",'.png'),width = 10, height = 5, dpi = 600)
+  
+  # pdf(paste0('plots/zoop/',j,"_Biomass",'.pdf'), width=10, height=5)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+  # png(paste0('plots/zoop/',j,"_Biomass",'.png'), width=6000, height=3000, res = 600)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+}
+
+
+
+### CTD.Temp interpoLation and plots ---- need to fix bathymetry?
+for (j in 1:length(sites)){
+  mydata2 <- mydata %>% 
+    filter(OPC_site == sites[j] & is.na(Depth)==FALSE)
+  Bathy2 <- filter(Bathy, site == sitesB[j])
+  #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
+  #               nx = 100, ny = 100)
+  fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = CTD.Temp, nx = 100, ny = 100))
+  
+  df <- melt(fit1$z, na.rm = TRUE)
+  names(df) <- c("x", "y", "CTD.Temp")
+  df$Distance_Coast <- fit1$x[df$x]
+  df$Depth <- fit1$y[df$y]
+  
+  ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = CTD.Temp)) + 
+    geom_tile(data = df, aes(fill = CTD.Temp)) +
+    geom_contour(colour = "white", binwidth = 1) + 
+    scale_fill_distiller(palette = "RdBu", direction = -1, limits = c(min(mydata$CTD.Temp),max(mydata$CTD.Temp))) + 
+    #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
+    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
+    coord_cartesian(ylim=c(-(max(mydata2$Depth)), 0), xlim = c(0, max(mydata2$Distance_Coast)))+ # zooms in on the data without truncating data off the screen
+    ggtitle(paste0("CTD.Temp at ", sites[j]))
+  
+  ggsave(paste0('plots/CTD/',sites[j],"_CTD.Temp",'.pdf'),width = 10, height = 5)
+  ggsave(paste0('plots/CTD/',sites[j],"_CTD.Temp",'.png'),width = 10, height = 5, dpi = 600)
+  
+  # pdf(paste0('plots/zoop/',j,"_Biomass",'.pdf'), width=10, height=5)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+  # png(paste0('plots/zoop/',j,"_Biomass",'.png'), width=6000, height=3000, res = 600)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+}
+
+### Oxygen interpoLation and plots ---- need to fix bathymetry?
+for (j in 1:length(sites)){
+  mydata2 <- mydata %>% 
+    filter(OPC_site == sites[j] & is.na(Depth)==FALSE)
+  Bathy2 <- filter(Bathy, site == sitesB[j])
+  #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
+  #               nx = 100, ny = 100)
+  fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = Oxygen, nx = 100, ny = 100))
+  
+  df <- melt(fit1$z, na.rm = TRUE)
+  names(df) <- c("x", "y", "Oxygen")
+  df$Distance_Coast <- fit1$x[df$x]
+  df$Depth <- fit1$y[df$y]
+  
+  ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = Oxygen)) + 
+    geom_tile(data = df, aes(fill = Oxygen)) +
+    geom_contour(colour = "white", binwidth = 10) + 
+    scale_fill_distiller(palette = "RdBu", direction = -1, limits = c(min(mydata$Oxygen),max(mydata$Oxygen))) + 
+    #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
+    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
+    coord_cartesian(ylim=c(-(max(mydata2$Depth)), 0), xlim = c(0, max(mydata2$Distance_Coast)))+ # zooms in on the data without truncating data off the screen
+    ggtitle(paste0("Oxygen at ", sites[j]))
+  
+  ggsave(paste0('plots/CTD/',sites[j],"_Oxygen",'.pdf'),width = 10, height = 5)
+  ggsave(paste0('plots/CTD/',sites[j],"_Oxygen",'.png'),width = 10, height = 5, dpi = 600)
   
   # pdf(paste0('plots/zoop/',j,"_Biomass",'.pdf'), width=10, height=5)
   # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
