@@ -381,3 +381,16 @@ ggsave("plots/zoop/TS plot by Depth below 50.pdf", width=10, height=8)
 ggsave("plots/zoop/TS plot by Depth below 50.png", width=10, height=8, dpi = 600)
 
 
+### SOME SIMPLE ZOOPLANKTON MODELS
+
+fit1 <- lm(Biomass ~ Temp + Salt + Depth + site + Distance_Coast, data = mydata)
+summary(fit1)
+
+library(effects)
+plot(allEffects(fit1))
+
+fit2 <- lm(ParetoSlope ~ Temp + Salt + Depth + site + Distance_Coast, data = mydata)
+summary(fit2)
+
+library(effects)
+plot(allEffects(fit2))
