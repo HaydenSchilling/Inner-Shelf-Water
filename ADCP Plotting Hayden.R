@@ -3,6 +3,8 @@
 #install.packages("akima")
 
 library(akima)
+library(tidyverse)
+library(reshape2)
 
 mydata <- read.csv("Data/ADP_tows_final_300419.csv")
 str(mydata)
@@ -31,7 +33,7 @@ for (i in 1:nrow(mydata)){
 
 ### Get Bathymetry and add distance from coast
 Bathy <- read.csv("Data/Transect Bathymetry.csv", header = T)
-Bathy <- subset(Bathy, Bathymetry <= 0 & Bathymetry > -200)
+Bathy <- subset(Bathy, Bathymetry < -1 & Bathymetry > -300)
 
 
 Bathy$Distance_Coast = 0
@@ -152,7 +154,7 @@ for (j in 1:length(sites)){
     scale_fill_distiller(palette = "RdBu", direction = -1, limits = c(-2,  2)) + 
     #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
-    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
+    geom_ribbon(data= Bathy2, aes(x = Distance_Coast, ymax = Bathymetry, ymin=-300), inherit.aes = FALSE, fill = "grey60") +
     ggtitle(paste0("V_shore at ", sites[j]))
   
   ggsave(paste0('plots/ADCP/',sites[j],"_V_shore",'.pdf'),width = 10, height = 5)
@@ -189,7 +191,7 @@ for (j in 1:length(sites)){
     scale_fill_distiller(palette = "RdBu", direction = -1, limits = c(-0.5,  0.5)) + 
     #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
-    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
+    geom_ribbon(data= Bathy2, aes(x = Distance_Coast, ymax = Bathymetry, ymin=-300), inherit.aes = FALSE, fill = "grey60") +
     ggtitle(paste0("U_shore at ", sites[j]))
   
   ggsave(paste0('plots/ADCP/',sites[j],"_U_shore",'.pdf'),width = 10, height = 5)

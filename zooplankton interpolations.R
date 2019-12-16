@@ -44,7 +44,7 @@ for (i in 1:nrow(mydata)){
 
 ### Get Bathymetry and add distance from coast
 Bathy <- read.csv("Data/Transect Bathymetry.csv", header = T)
-Bathy <- subset(Bathy, Bathymetry <= 0 & Bathymetry > -200)
+Bathy <- subset(Bathy, Bathymetry < -1 & Bathymetry >= -200)
 
 
 Bathy$Distance_Coast = 0
@@ -147,11 +147,11 @@ for (j in sites){
   ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = log10(Biomass))) + 
     geom_tile(aes(fill = log10(Biomass))) +
     geom_contour(colour = "white", binwidth = 0.125) + 
-    scale_fill_distiller(palette = "YlOrRd", direction = 1, limits = c(-0.25,  0.75)) + 
+    scale_fill_distiller(palette = "Spectral", direction = -1, limits = c(-0.3,  0.5)) + 
     geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
-    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
-    ggtitle(paste0("Biomass at ", j))
+    geom_ribbon(data= Bathy2, aes(x = Distance_Coast, ymax = Bathymetry, ymin=-200), inherit.aes = FALSE, fill = "grey60") +
+    ggtitle(paste0("Biomass at ", j)) + theme_classic()
   
   ggsave(paste0('plots/zoop/',j,"_Biomass",'.pdf'),width = 10, height = 5)
   ggsave(paste0('plots/zoop/',j,"_Biomass",'.png'),width = 10, height = 5, dpi = 600)
@@ -245,10 +245,11 @@ for (j in sites){
   ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = GeoMn)) + 
     geom_tile(aes(fill = GeoMn)) +
     geom_contour(colour = "white") + #, binwidth = 0.125
-    scale_fill_distiller(palette = "YlOrRd", direction = 1) + 
+    scale_fill_distiller(palette = "Spectral", direction = 1, # "YlOrRd" 
+                         limits = c(min(mydata$GeoMn*1000, na.rm = TRUE), max(mydata$GeoMn*1000, na.rm = TRUE))) + 
     geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) +
-    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
+    geom_ribbon(data= Bathy2, aes(x = Distance_Coast, ymax = Bathymetry, ymin=-200), inherit.aes = FALSE, fill = "grey60") +
     ggtitle(paste0("Geometric Mean Size at ", j))
   
   ggsave(paste0('plots/zoop/',j,"_GeoMn",'.pdf'),width = 10, height = 5)
@@ -306,13 +307,43 @@ for (j in sites){
     scale_fill_distiller(palette = "Spectral", direction = 1, limits = c(min(mydata$ParetoSlope), max(mydata$ParetoSlope))) + 
     geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth),alpha = 0.5) + 
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) +
-    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
-    ggtitle(paste0("Pareto Slope at ", j))
+    geom_ribbon(data= Bathy2, aes(x = Distance_Coast, ymax = Bathymetry, ymin=-200), inherit.aes = FALSE, fill = "grey60") +
+    ggtitle(paste0("Pareto Slope at ", j)) + theme_classic()
   
   ggsave(paste0('plots/zoop/',j,"_Pareto_Slope",'.pdf'),width = 10, height = 5)
   ggsave(paste0('plots/zoop/',j,"_Pareto_Slope",'.png'),width = 10, height = 5, dpi = 600)
   
 }
+
+
+### Temperature #  done
+for (j in sites){
+  mydata2 <- filter(mydata, site == j)
+  mydata2 <-  mydata2 %>% drop_na(Temp) %>% filter(Temp != Inf)
+  Bathy2 <- filter(Bathy, site == j)
+  #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
+  #               nx = 100, ny = 100)
+  fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = Temp, nx = 100, ny = 100))
+  
+  df <- melt(fit1$z, na.rm = TRUE)
+  names(df) <- c("x", "y", "Temp")
+  df$Distance_Coast <- fit1$x[df$x]
+  df$Depth <- fit1$y[df$y]
+  
+  ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = Temp)) + 
+    geom_tile(aes(fill = Temp)) +
+    geom_contour(colour = "white", binwidth = 1) + #, binwidth = 0.125
+    scale_fill_distiller(palette = "Spectral", direction = -1, limits = c(min(mydata$Temp), max(mydata$Temp))) + 
+    geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth),alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) +
+    geom_ribbon(data= Bathy2, aes(x = Distance_Coast, ymax = Bathymetry, ymin=-250), inherit.aes = FALSE, fill = "grey60") +
+    ggtitle(paste0("Temperature at ", j))
+  
+  ggsave(paste0('plots/zoop/',j,"_Temperature",'.pdf'),width = 10, height = 5)
+  ggsave(paste0('plots/zoop/',j,"_Temperature",'.png'),width = 10, height = 5, dpi = 600)
+  
+}
+
 
 
 ### TS Plots
@@ -383,14 +414,68 @@ ggsave("plots/zoop/TS plot by Depth below 50.png", width=10, height=8, dpi = 600
 
 ### SOME SIMPLE ZOOPLANKTON MODELS
 
-fit1 <- lm(Biomass ~ Temp + Salt + Depth + site + Distance_Coast, data = mydata)
+cor.test(mydata$Temp, mydata$Salt)
+cor.test(mydata$Temp, mydata$Depth)
+cor.test(mydata$Temp, mydata$Distance_Coast)
+cor.test(mydata$Lon, mydata$Distance_Coast)
+
+
+
+mydataX <- mydata %>% drop_na(Biomass)
+
+
+fit1 <- lm(log10(Biomass) ~ Temp*Depth + Distance_Coast + site*Lon, data = mydataX)
+plot(fit1)
 summary(fit1)
 
 library(effects)
 plot(allEffects(fit1))
 
-fit2 <- lm(ParetoSlope ~ Temp + Salt + Depth + site + Distance_Coast, data = mydata)
+fit2 <- lm(ParetoSlope ~ Temp*Depth + Distance_Coast + site*Lon, data = mydata)
+plot(fit2)
 summary(fit2)
 
 library(effects)
 plot(allEffects(fit2))
+
+fit3 <- lm(GeoMn*1000 ~ Temp*Depth + Distance_Coast + site*Lon, data = mydata)
+plot(fit3)
+summary(fit3)
+
+library(effects)
+plot(allEffects(fit3))
+
+
+### Spatial Autocorrelation Morans I (code from Charlie)
+library(lctools)
+
+res <- residuals(fit2)
+#res
+
+
+Coords <-cbind(mydataX$Lat, mydataX$Lon)
+
+bw <- 10
+
+mI <-moransI(Coords,bw,res)
+
+moran.table <-matrix(data=NA,nrow=1,ncol=6)
+
+col.names <-c("Moran's I", "Expected I", "Z resampling", "P-value resampling","Z randomization", "P-value randomization")
+
+colnames(moran.table) <- col.names
+
+moran.table[1,1] <- mI$Morans.I
+
+moran.table[1,2] <- mI$Expected.I
+
+moran.table[1,3] <- mI$z.resampling
+
+moran.table[1,4] <- mI$p.value.resampling
+
+moran.table[1,5] <- mI$z.randomization
+
+moran.table[1,6] <- mI$p.value.randomization
+
+print(moran.table)
+
