@@ -9,7 +9,7 @@ library(ggplot2)
 library(reshape2)
 library(tidyverse)
 
-mydata <- read_csv("Data/SS2004_SeaSoarData.csv")
+mydata <- read_csv("Data/SS2004_SeaSoarData_with_GEBCO.csv")
 str(mydata)
 head(mydata)
 
@@ -63,11 +63,7 @@ for (i in 1:nrow(Bathy)){
   }
 }
 
-p1 <- ggplot(mydata, aes(x = Lon, y = -Depth)) + geom_point(aes(col = Abundance)) +
-  facet_wrap(~site, scales = "free_x") + theme_bw() +
-  geom_line(data= Bathy, aes(x = Longitude, y = Bathymetry)) +
-  scale_color_gradient2(low = "blue", high = "red", mid = "white")
-p1
+
 
 
 # # variables to loop through
@@ -245,7 +241,7 @@ for (j in sites){
   ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = GeoMn)) + 
     geom_tile(aes(fill = GeoMn)) +
     geom_contour(colour = "white") + #, binwidth = 0.125
-    scale_fill_distiller(palette = "Spectral", direction = 1, # "YlOrRd" 
+    scale_fill_distiller(palette = "Spectral", direction = -1, # "YlOrRd" 
                          limits = c(min(mydata$GeoMn*1000, na.rm = TRUE), max(mydata$GeoMn*1000, na.rm = TRUE))) + 
     geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) +
@@ -347,6 +343,7 @@ for (j in sites){
 
 
 ### TS Plots
+
 #install.packages("sommer")
 library(sommer) # for jet colour scheme
 
@@ -420,8 +417,7 @@ cor.test(mydata$Temp, mydata$Distance_Coast)
 cor.test(mydata$Lon, mydata$Distance_Coast)
 
 
-
-mydataX <- mydata %>% drop_na(Biomass)
+mydataX <- mydata %>% drop_na(Biomass) # removes some dud samples which stuff the morans I below
 
 
 fit1 <- lm(log10(Biomass) ~ Temp*Depth + Distance_Coast + site*Lon, data = mydataX)
@@ -479,3 +475,69 @@ moran.table[1,6] <- mI$p.value.randomization
 
 print(moran.table)
 
+
+
+### Plots for Iain ## Not Done
+
+hist(mydata$ParetoSlope)
+
+dat2 <- mydata %>% filter(Depth >10 & Depth >51)
+dat2$site <- factor(dat2$site, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+dat3 <- dat2
+dat3$Bathy <- dat2$Bathy * -1
+
+dat3 <- dat3 %>% filter(Bathy <= 300)
+
+fitA <- lm(Biomass ~ Bathy, data = dat3)
+summary(fitA)
+coefs <- coef(fitA)
+
+pA <- ggplot(dat2, aes(x = -Bathy, y = Biomass)) + geom_point() +
+  geom_smooth(method = "lm") + facet_wrap(~site) + xlim(0, 300) + theme_classic() +
+  geom_abline(slope = coefs[2], intercept = coefs[1], lty = 2)
+pA
+
+ggsave("plots/zoop/Biomass by Bathymetry_300m.pdf", width=10, height=8)
+ggsave("plots/zoop/Biomass by Bathymetry_300m.png", width=10, height=8, dpi = 600)
+
+
+dat3 <- dat2
+dat3$Bathy <- dat2$Bathy * -1
+
+#dat3 <- dat3 %>% filter(Bathy <= 300)
+
+fitA <- lm(Biomass ~ Bathy, data = dat3)
+summary(fitA)
+coefsA <- coef(fitA)
+
+pA <- ggplot(dat2, aes(x = -Bathy, y = Biomass)) + geom_point() +
+  geom_smooth(method = "lm") + facet_wrap(~site) + theme_classic() +
+  geom_abline(slope = coefsA[2], intercept = coefsA[1], lty = 2)
+pA
+
+ggsave("plots/zoop/Biomass by Bathymetry.pdf", width=10, height=8)
+ggsave("plots/zoop/Biomass by Bathymetry.png", width=10, height=8, dpi = 600)
+
+fitB <- lm(ParetoSlope ~ Bathy, data = dat3)
+summary(fitB)
+coefsB <- coef(fitB)
+
+pB <- ggplot(dat2, aes(x = -Bathy, y = ParetoSlope, col = site)) + geom_point() +
+  geom_smooth(method = "lm") + facet_wrap(~site) +  theme_classic() +
+  geom_abline(slope = coefsB[2], intercept = coefsB[1], lty = 2)
+pB
+
+ggsave("plots/zoop/Slope by Bathymetry.pdf", width=10, height=8)
+ggsave("plots/zoop/Slope by Bathymetry.png", width=10, height=8, dpi = 600)
+
+fitC <- lm(GeoMn ~ Bathy, data = dat3)
+summary(fitC)
+coefsC <- coef(fitC)
+
+pC <- ggplot(dat2, aes(x = -Bathy, y = GeoMn*1000, col = site)) + geom_point() +
+  geom_smooth(method = "lm") + facet_wrap(~site) +  theme_classic() +
+  geom_abline(slope = coefsC[2], intercept = coefsC[1], lty = 2)
+pC
+
+ggsave("plots/zoop/Size by Bathymetry.pdf", width=10, height=8)
+ggsave("plots/zoop/Size by Bathymetry.png", width=10, height=8, dpi = 600)
