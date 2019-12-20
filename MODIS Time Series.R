@@ -103,20 +103,17 @@ date_dat$East_West <- factor(date_dat$East_West, levels = c("West", "East"))
 date_dat$Transect <- factor(date_dat$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
 str(date_dat)
 
-p1 <- ggplot(dat, aes(x = Date, y = chl_oc3_1d)) + geom_line() + geom_point() +
+dat$chl_oc3_1d[dat$chl_oc3_1d > 10] <- 10
+
+p1 <- ggplot(dat, aes(x = Date, y = log10(chl_oc3_1d + 0.5*min(dat$chl_oc3_1d, na.rm = T)))) + geom_line() + geom_point() +
   facet_grid(Transect~East_West) + theme_classic() +
   geom_vline(data = date_dat, aes(xintercept =  Date), col = "red", lty = 2) +
-  ylab ("MODIS Chl_a")
+  ylab ("log10(MODIS Chl_a)")
 p1
 
 ggsave("plots/MODIS Chl_a month prior.png", height = 14.8, width = 21, units = "cm", dpi = 600)
 
-p2 <- ggplot(dat, aes(x = Date, y = sst_1d)) + geom_line() +
-  facet_grid(Transect~East_West) + theme_classic() +
-  geom_vline(data = date_dat, aes(xintercept =  Date), col = "red", lty = 2)
-p2
-
-## Try larger spatial resolution
+## Try larger spatial resolution ##
 
 # Set resolutions
 res_temp <- "1d" # temporal resolutions
