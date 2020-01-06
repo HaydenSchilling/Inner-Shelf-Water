@@ -11,6 +11,7 @@ str(mydata)
 head(mydata)
 
 
+
 ### Get distance from shore
 library(geosphere)
 
@@ -90,7 +91,10 @@ for (i in 1:nrow(mydata)){
 }
 
 
-
+### Test summary
+datdat <- mydata %>% group_by(OPC_site) %>% summarise(maxV = min(V_shore), minV = max(V_shore),
+                                                      maxU = min(U_shore), minU = max(U_shore))
+datdat
 
 #vars = c("U_shore", "V_shore", "U", "V")
 sites = c("DH", "NS", "EH", "CB")
