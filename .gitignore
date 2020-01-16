@@ -3,6 +3,6 @@
 .Rproj.user
 /plots/*
 /resources/Oceanographic*
-*.Rhistory
+.Rhistory
 .Rhistory
 /Data/GEBCO*

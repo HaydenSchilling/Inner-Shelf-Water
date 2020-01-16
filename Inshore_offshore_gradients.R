@@ -1,0 +1,191 @@
+# Looking at the temperature gradient from inner shelf to outer shelf
+
+## Need to get location and date matrix then extract SST from satelites
+
+# As inshore, let's use 15km from shore
+
+
+library(tidyverse)
+
+#inshore locations (15 km from shore):
+ # CB - -28.632 , 153.794
+ # EH - -29 , 153.637
+ # NS - -30 , 153.384
+ # DH - -31.75, 153.944
+sitesX <- data.frame(Site = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"),
+                    Latitude_Inshore = c(-28.632, -29, -30, -31.65),
+                    Longitude_Inshore = c(153.794, 153.637, 153.384, 153.944))
+
+# Offshore locations 
+library(geosphere)
+destPoint(p = c(sitesX$Longitude_Inshore[1], sitesX$Latitude_Inshore[1]), b = 90, d = 25000)
+destPoint(p = c(sitesX$Longitude_Inshore[2], sitesX$Latitude_Inshore[2]), b = 90, d = 25000)
+destPoint(p = c(sitesX$Longitude_Inshore[3], sitesX$Latitude_Inshore[3]), b = 90, d = 25000)
+destPoint(p = c(sitesX$Longitude_Inshore[4], sitesX$Latitude_Inshore[4]), b = 90, d = 25000)
+
+sitesX$Latitude_Offshore <- c(-28.63176, -28.99976, -29.99975, -31.64973)
+sitesX$Longitude_Offshore <- c(154.0497, 153.8936, 153.6431, 154.2076)
+
+sitesX
+
+# Now make date string
+# let's to 2004 - 2013 (10 years)
+
+Date = seq.Date(from = as.Date("2004-01-01") , to = as.Date("2013-12-31"), by = 1)
+
+
+### Make a dataframe for each site
+sites = levels(sitesX$Site)
+sites
+
+df_list <- list()
+
+for (i in sites){
+  dat2 <- filter(sitesX, Site == i)
+  assign(paste0("dat_",i,"_West"), data.frame(Longitude = dat2$Longitude_Inshore[1], Latitude = dat2$Latitude_Inshore[1],
+                                              Date =seq.Date(from = as.Date("2004-01-01") , to = as.Date("2013-12-31"), by = 1),
+                                              Location = paste0(i,"_West")))
+  assign(paste0("dat_",i,"_East"), data.frame(Longitude = dat2$Longitude_Offshore[1], Latitude = dat2$Latitude_Offshore[1],
+                                              Date = seq.Date(from = as.Date("2004-01-01") , to = as.Date("2013-12-31"), by = 1),
+                                              Location = paste0(i,"_East")))
+}
+
+# merge into a single dataframe
+df_list <- list(dat_CapeByron_East, dat_CapeByron_West, dat_DiamondHead_East, dat_DiamondHead_West,
+                dat_EvansHead_East, dat_EvansHead_West, dat_NorthSolitary_East, dat_NorthSolitary_West)
+full_dat <- bind_rows(df_list)
+full_dat$Location <- as.factor(full_dat$Location)
+str(full_dat)
+
+
+
+
+############################
+
+# Test a smaller dataset (works well)
+#full_dat <- head(full_dat)
+
+# # remove dodgy dates from MODIS
+# full_dat <- filter(full_dat, Date != "2004-12-04")
+# full_dat <- filter(full_dat, Date != "2006-07-05")
+# full_dat <- filter(full_dat, Date != "2007-06-02")
+# full_dat <- filter(full_dat, Date != "2007-12-02")
+# 
+# 
+CBE_dat <- filter(full_dat, Location == "CapeByron_East")
+CBW_dat <- filter(full_dat, Location == "CapeByron_West")
+DHE_dat <- filter(full_dat, Location == "DiamondHead_East")
+DHW_dat <- filter(full_dat, Location == "DiamondHead_West")
+NSE_dat <- filter(full_dat, Location == "NorthSolitary_East")
+NSW_dat <- filter(full_dat, Location == "NorthSolitary_West")
+EHE_dat <- filter(full_dat, Location == "EvansHead_East")
+EHW_dat <- filter(full_dat, Location == "EvansHead_West")
+
+
+head(full_dat)
+
+## Load download code
+source("../../../IMOS Data/IMOS_Toolbox/fIMOS_MatchMODIS.R")
+#source("fIMOS_MatchMODIS.R")
+
+
+# Possible products
+# pr <- c("sst_quality", "sst", "picop_brewin2012in", "picop_brewin2010at", "par", 
+#         "owtd", "npp_vgpm_eppley_oc3", "npp_vgpm_eppley_gsm", "nanop_brewin2012in",
+#         "nanop_brewin2010at", "l2_flags", "ipar", "dt", "chl_oc3", "chl_gsm", "K_490")
+
+pr <- c("sst") # select products here eg: "chl_oc3", "sst"
+# Set resolutions
+res_temp <- "1d" # temporal resolutions
+res_spat <- 5 # Return the average of res_spat x res_spat pixels
+
+#dat <- fIMOS_MatchMODIS(full_dat, pr, res_temp, res_spat)
+#str(dat)
+
+
+
+#write.csv(dat, "Inshore_Offshore_Gradient.csv", row.names = F)
+
+
+
+#CBE_dat <- fIMOS_MatchMODIS(CBE_dat, pr, res_temp, res_spat) #
+#write.csv(CBE_dat, "CB_east.csv", row.names = FALSE)
+CBE_dat <- read_csv("CB_east.csv")
+
+#CBW_dat <- fIMOS_MatchMODIS(CBW_dat, pr, res_temp, res_spat) #
+#write.csv(CBW_dat, "CB_west.csv", row.names = FALSE)
+CBW_dat <- read_csv("CB_west.csv")
+
+#EHE_dat <- fIMOS_MatchMODIS(EHE_dat, pr, res_temp, res_spat) #
+#write.csv(EHE_dat, "EH_east.csv", row.names = FALSE)
+EHE_dat <- read_csv("EH_east.csv")
+
+#EHW_dat <- fIMOS_MatchMODIS(EHW_dat, pr, res_temp, res_spat) #
+#write.csv(EHW_dat, "EH_west.csv", row.names = FALSE)
+EHW_dat <- read_csv("EH_west.csv")
+
+#NSE_dat <- fIMOS_MatchMODIS(NSE_dat, pr, res_temp, res_spat) #
+#write.csv(NSE_dat, "NS_east.csv", row.names = FALSE)
+NSE_dat <- read_csv("NS_east.csv")
+
+#NSW_dat <- fIMOS_MatchMODIS(NSW_dat, pr, res_temp, res_spat) #
+#write.csv(NSW_dat, "NS_west.csv", row.names = FALSE)
+NSW_dat <- read_csv("NS_west.csv")
+
+#DHE_dat <- fIMOS_MatchMODIS(DHE_dat, pr, res_temp, res_spat) #
+#write.csv(DHE_dat, "DH_east.csv", row.names = FALSE)
+DHE_dat <- read_csv("DH_east.csv")
+
+
+#DHW_dat <- fIMOS_MatchMODIS(DHW_dat, pr, res_temp, res_spat) #
+#write.csv(DHW_dat, "DH_west.csv", row.names = FALSE)
+DHW_dat <- read_csv("DH_west.csv")
+
+
+df_list <- list(CBE_dat, CBW_dat, EHE_dat,EHW_dat, NSW_dat, NSE_dat, DHE_dat, DHW_dat) # fill with more later
+dat <- bind_rows(df_list)
+
+
+dat2 <- str_split_fixed(dat$Location, pattern = "_", n = 2)
+dat$Transect <- as.factor(dat2[,1])
+dat$East_West <- as.factor(dat2[,2])
+# Remove data columns that don't match for east and west data
+dat$Location <- NULL
+dat$Latitude <- NULL
+dat$Longitude <- NULL
+head(dat)
+
+datX <- dat %>% spread(key = East_West, value = sst_1d,  fill = NA) %>% mutate(Offshore_Inshore = East - West)
+
+head(datX)
+tail(datX)
+hist(datX$Offshore_Inshore)
+summary(datX$Offshore_Inshore)
+levels(dat$East_West)
+levels(dat$Transect)
+
+datX$Transect <- factor(datX$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+# count all samples
+dat_sum_all <- datX %>% group_by(Transect) %>% drop_na() %>% summarise(n = n())
+dat_sum_all
+dat_sum_all$Transect <- factor(dat_sum_all$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+# count all samples with a difference > 1
+dat_sum <- datX %>% filter(Offshore_Inshore >= 1) %>% group_by(Transect) %>% 
+  summarise(n = n(), mean = mean(Offshore_Inshore), median = median(Offshore_Inshore), sd = sd(Offshore_Inshore))
+dat_sum
+dat_sum$Transect <- factor(dat_sum$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+
+p1 <- ggplot(datX, aes(x = Offshore_Inshore)) + geom_histogram(aes(y = stat(count / sum(count))), binwidth = 0.5) +
+  facet_wrap(~Transect) + theme_bw() + geom_vline(aes(xintercept = 1)) +
+  xlab("45 km Offshore Temp -  15 km Offshore Temp") + ylab("Proportion") +
+geom_label(data = dat_sum, aes(x = 5, y = 0.075, 
+                            label = paste("Mean: ", round(mean, 1), "\nMedian: ", round(median,1), "\nSD: ", round(sd, 1),
+                                          "\n% >1:", round(n/dat_sum_all$n *100,1))))
+p1
+

@@ -63,8 +63,13 @@ for (i in 1:nrow(Bathy)){
   }
 }
 
+mydata <- separate(mydata, col = datestr, into = c("date", "time"), sep = " ")
+library(chron)
+mydata$time <- chron(times=mydata$time)
 
-
+plot(mydata$time, mydata$site)
+datdat <- mydata %>% group_by(site) %>% summarise(Time = mean(time))
+datdat
 
 # # variables to loop through
 # vars = c("Temp", "Salt","GeoMn")# "NBSS.Slope",
