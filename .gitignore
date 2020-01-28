@@ -4,5 +4,6 @@
 /plots/*
 /resources/Oceanographic*
 .Rhistory
+*.pptx
 .Rhistory
 /Data/GEBCO*

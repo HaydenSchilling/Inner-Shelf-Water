@@ -546,3 +546,94 @@ pC
 
 ggsave("plots/zoop/Size by Bathymetry.pdf", width=10, height=8)
 ggsave("plots/zoop/Size by Bathymetry.png", width=10, height=8, dpi = 600)
+
+
+### plots for Iain
+head(mydata)
+
+mydata$site <- factor(mydata$site, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+mydata2 <- filter(mydata, Depth > 10 & Depth < 50)
+
+px <- ggplot(mydata2, aes(Distance_Coast, y = Abundance)) + geom_point() +
+  facet_wrap(~site) + theme_bw() + ggtitle("Top 50m depth")
+px
+ggsave("plots/zoop/Abundance by distance top 50.png", width=21, height=14.8, units ="cm", dpi = 600)
+
+mydata3 <- filter(mydata, Depth > 50 & Depth < 100)
+
+px <- ggplot(mydata3, aes(Distance_Coast, y = Abundance)) + geom_point() +
+  facet_wrap(~site)+ theme_bw() + ggtitle("50 - 100m depth")
+px
+ggsave("plots/zoop/Abundance by distance 50 - 100m.png", width=21, height=14.8, units ="cm", dpi = 600)
+
+mydata4 <- filter(mydata, Depth > 100 & Depth < 200)
+
+px <- ggplot(mydata4, aes(Distance_Coast, y = Abundance)) + geom_point() +
+  facet_wrap(~site) + theme_bw() + ggtitle("100 - 200m depth")
+px
+ggsave("plots/zoop/Abundance by distance 100-200m.png", width=21, height=14.8, units ="cm", dpi = 600)
+
+
+# Slope
+mydata2 <- filter(mydata, Depth > 10 & Depth < 50)
+
+px <- ggplot(mydata2, aes(Distance_Coast, y = ParetoSlope)) + geom_point() +
+  facet_wrap(~site) + theme_bw() + ggtitle("Top 50m depth")
+px
+ggsave("plots/zoop/Pareto by distance top 50.png", width=21, height=14.8, units ="cm", dpi = 600)
+
+mydata3 <- filter(mydata, Depth > 50 & Depth < 100)
+
+px <- ggplot(mydata3, aes(Distance_Coast, y = ParetoSlope)) + geom_point() +
+  facet_wrap(~site)+ theme_bw() + ggtitle("50 - 100m depth")
+px
+ggsave("plots/zoop/Pareto by distance 50 - 100m.png", width=21, height=14.8, units ="cm", dpi = 600)
+
+mydata4 <- filter(mydata, Depth > 100 & Depth < 200)
+
+px <- ggplot(mydata4, aes(Distance_Coast, y = ParetoSlope)) + geom_point() +
+  facet_wrap(~site) + theme_bw() + ggtitle("100 - 200m depth")
+px
+ggsave("plots/zoop/Pareto by distance 100-200m.png", width=21, height=14.8, units ="cm", dpi = 600)
+
+
+### Size
+
+# Slope
+mydata2 <- filter(mydata, Depth > 10 & Depth < 50)
+
+px <- ggplot(mydata2, aes(Distance_Coast, y = GeoMn*1000000)) + geom_point() +
+  facet_wrap(~site) + theme_bw() + ggtitle("Top 50m depth")
+px
+ggsave("plots/zoop/Size by distance top 50.png", width=21, height=14.8, units ="cm", dpi = 600)
+
+mydata3 <- filter(mydata, Depth > 50 & Depth < 100)
+
+px <- ggplot(mydata3, aes(Distance_Coast, y = GeoMn*1000000)) + geom_point() +
+  facet_wrap(~site)+ theme_bw() + ggtitle("50 - 100m depth")
+px
+ggsave("plots/zoop/Size by distance 50 - 100m.png", width=21, height=14.8, units ="cm", dpi = 600)
+
+mydata4 <- filter(mydata, Depth > 100 & Depth < 200)
+
+px <- ggplot(mydata4, aes(Distance_Coast, y = GeoMn*1000000)) + geom_point() +
+  facet_wrap(~site) + theme_bw() + ggtitle("100 - 200m depth")
+px
+ggsave("plots/zoop/Size by distance 100-200m.png", width=21, height=14.8, units ="cm", dpi = 600)
+
+
+pl <- ggplot(mydata, aes(x = Temp, y = Salt, size = Biomass, col = Biomass)) + geom_point(alpha = 0.3) +
+  facet_wrap(~site) + theme_bw()
+pl
+
+ggsave("plots/zoop/T-S by Biomass.png", width=21, height=14.8, units ="cm", dpi = 600)
+
+mydata <- filter(mydata, ParetoSlope > -1.6)
+
+pl <- ggplot(mydata, aes(x = Temp, y = Salt, size = ParetoSlope, col = ParetoSlope)) + geom_point(alpha = 0.3) +
+  facet_wrap(~site) + theme_bw()
+pl
+
+ggsave("plots/zoop/T-S by Slope.png", width=21, height=14.8, units ="cm", dpi = 600)
+
