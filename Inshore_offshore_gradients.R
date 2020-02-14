@@ -180,6 +180,8 @@
 # 
 #write.csv(datX, "Data/Temp gradient all sites_5km.csv", row.names = F)
 
+library(tidyverse)
+
 datX <- read_csv("Data/Temp gradient all sites_5km.csv")
 datX$Transect <- factor(datX$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
 datX <- filter(datX, Offshore_Inshore <= 8)
@@ -210,7 +212,7 @@ geom_label(data = dat_sum, aes(x = 4.8, y = 0.075,
     "\n% > 1 deg:", round(n/dat_sum_all$n *100,1))))
 p1
 
-ggsave("plots/Inshore_Offshore_Temp_Gradiet_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
+#ggsave("plots/Inshore_Offshore_Temp_Gradiet_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
 
 # Check Seasonal Patterns
 # Cape Byron
@@ -238,7 +240,7 @@ p1 <- ggplot(datX2_cb, aes(x = Offshore_Inshore)) + geom_histogram(aes(y = stat(
                                                round(dat_sum_all_cb$median,1), "\nSD: ", round(dat_sum_all_cb$sd, 1),
                                                "\n% > 1 deg:", round(dat_sum_cb$n/dat_sum_all_cb$n *100,1))))
 p1
-ggsave("plots/Inshore_Offshore_Temp_Gradiet CB Months_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
+#ggsave("plots/Inshore_Offshore_Temp_Gradiet CB Months_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
 
 dat_sum_all_cb$Percent_1 <-  dat_sum_cb$n/dat_sum_all_cb$n *100
 dat_sum_all_cb <- dat_sum_all_cb %>% drop_na()
@@ -269,7 +271,7 @@ p1 <- ggplot(datX2_EH, aes(x = Offshore_Inshore)) + geom_histogram(aes(y = stat(
                                                round(dat_sum_all_EH$median,1), "\nSD: ", round(dat_sum_all_EH$sd, 1),
                                                "\n% > 1 deg:", round(n/dat_sum_all_EH$n *100,1))))
 p1
-ggsave("plots/Inshore_Offshore_Temp_Gradiet EH Months_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
+#ggsave("plots/Inshore_Offshore_Temp_Gradiet EH Months_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
 
 dat_sum_all_EH$Percent_1 <-  dat_sum_EH$n/dat_sum_all_EH$n *100
 dat_sum_all_EH <- dat_sum_all_EH %>% drop_na()
@@ -300,7 +302,7 @@ p1 <- ggplot(datX2_NS, aes(x = Offshore_Inshore)) + geom_histogram(aes(y = stat(
                                                round(dat_sum_all_NS$median,1), "\nSD: ", round(dat_sum_all_NS$sd, 1),
                                                "\n% > 1 deg:", round(n/dat_sum_all_NS$n *100,1))))
 p1
-ggsave("plots/Inshore_Offshore_Temp_Gradiet NS Months_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
+#ggsave("plots/Inshore_Offshore_Temp_Gradiet NS Months_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
 
 dat_sum_all_NS$Percent_1 <-  dat_sum_NS$n/dat_sum_all_NS$n *100
 dat_sum_all_NS <- dat_sum_all_NS %>% drop_na()
@@ -310,10 +312,10 @@ dat_sum_all_NS
 # count all samples
 datX2_DH <- filter(datX, Transect == "DiamondHead")
 
-dat_sum_all_DH <- datX2 %>% group_by(Transect, Month) %>% drop_na(Offshore_Inshore) %>% 
+dat_sum_all_DH <- datX2_DH %>% group_by(Transect, Month) %>% drop_na(Offshore_Inshore) %>% 
   summarise(n = n(), mean = mean(Offshore_Inshore), median = median(Offshore_Inshore), sd = sd(Offshore_Inshore))
 dat_sum_all_DH
-dat_sum_all$Transect <- factor(dat_sum_all_DH$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+dat_sum_all_DH$Transect <- factor(dat_sum_all_DH$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
 
 
 # count all samples with a difference > 1
@@ -331,7 +333,7 @@ p1 <- ggplot(datX2_DH, aes(x = Offshore_Inshore)) + geom_histogram(aes(y = stat(
                                                round(dat_sum_all_DH$median,1), "\nSD: ", round(dat_sum_all_DH$sd, 1),
                                                "\n% > 1 deg:", round(n/dat_sum_all_DH$n *100,1))))
 p1
-ggsave("plots/Inshore_Offshore_Temp_Gradiet DH Months_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
+#ggsave("plots/Inshore_Offshore_Temp_Gradiet DH Months_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
 
 dat_sum_all_DH$Percent_1 <-  dat_sum_DH$n/dat_sum_all_DH$n *100
 dat_sum_all_DH <- dat_sum_all_DH %>% drop_na()
@@ -341,7 +343,316 @@ seasonal_full <- bind_rows(dat_sum_all_cb, dat_sum_all_EH, dat_sum_all_NS, dat_s
 head(seasonal_full)
 
 p_season <- ggplot(seasonal_full, aes(x = Month, y = Percent_1, lty = Transect)) + 
-  geom_line(size = 2) + theme_classic() + ylab("Pecent of Time Temperature Gradient > 1 deg C")
+  geom_line(size = 2) + theme_classic() + ylab("Temperature Gradient > 1 °C (% Days)") +
+  theme(axis.title.x = element_text(face="bold", colour="black", size = 20),
+        axis.text.x  = element_text(colour="black", size = 16), 
+        axis.title.y = element_text(face="bold", colour="black", size = 20),
+        axis.text.y  = element_text(colour="black", size = 16)) +
+  scale_x_continuous(limits=c(0.8, 12.1), breaks = c(1:12))
 p_season
 
 ggsave("plots/Inshore Offshore Seasonal patterns 5km.png", dpi = 600, height = 14.8, width = 21, units ="cm")
+
+#########################################################################################################################
+### TO make with error bars
+#########################################################################################################################
+
+datX <- read_csv("Data/Temp gradient all sites_5km.csv")
+datX$Transect <- factor(datX$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+datX <- filter(datX, Offshore_Inshore <= 8)
+head(datX)
+
+
+# count all samples
+dat_sum_all <- datX %>% group_by(Transect) %>% drop_na(Offshore_Inshore) %>% 
+  summarise(n = n(), mean = mean(Offshore_Inshore), median = median(Offshore_Inshore), sd = sd(Offshore_Inshore))
+dat_sum_all
+dat_sum_all$Transect <- factor(dat_sum_all$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+# count all samples with a difference > 1
+dat_sum <- datX %>% filter(Offshore_Inshore >= 1) %>% group_by(Transect) %>% drop_na() %>%
+  summarise(n = n())
+dat_sum
+dat_sum$Transect <- factor(dat_sum$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+
+p1 <- ggplot(datX, aes(x = Offshore_Inshore)) + geom_histogram(aes(y = stat(count / sum(count))), binwidth = 0.5) +
+  facet_wrap(~Transect) + theme_bw() + geom_vline(aes(xintercept = 0),lty = 2) +
+  xlab("Offshore - Inshore Temp (deg C)") + ylab("Proportion") +
+  geom_label(data = dat_sum, aes(x = 4.8, y = 0.075, 
+                                 label = paste("Mean: ", round(dat_sum_all$mean, 1), "\nMedian: ", 
+                                               round(dat_sum_all$median,1), "\nSD: ", round(dat_sum_all$sd, 1),
+                                               "\n% > 1 deg:", round(n/dat_sum_all$n *100,1))))
+p1
+
+#ggsave("plots/Inshore_Offshore_Temp_Gradiet_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
+
+# Check Seasonal Patterns
+# Cape Byron
+# count all samples
+datX2_cb <- filter(datX, Transect == "CapeByron")
+
+dat_sum_all_cb <- datX2_cb %>% group_by(Transect, Month, Year) %>% drop_na(Offshore_Inshore) %>% 
+  summarise(n = n(), mean = mean(Offshore_Inshore), median = median(Offshore_Inshore), sd = sd(Offshore_Inshore)) %>%
+  drop_na()
+dat_sum_all_cb
+dat_sum_all_cb$Transect <- factor(dat_sum_all_cb$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+# count all samples with a difference > 1
+dat_sum_cb <- datX2_cb %>% filter(Offshore_Inshore >= 1) %>% group_by(Transect, Month, Year) %>% drop_na() %>%
+  summarise(n = n()) %>% drop_na()
+dat_sum_cb
+dat_sum_cb$Transect <- factor(dat_sum_cb$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+#ggsave("plots/Inshore_Offshore_Temp_Gradiet CB Months_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
+
+dat_sum_all_cb$Percent_1 <-  dat_sum_cb$n/dat_sum_all_cb$n *100
+dat_sum_all_cb <- dat_sum_all_cb %>% drop_na()
+dat_sum_all_cb
+
+# Evans Head
+# count all samples
+datX2_EH <- filter(datX, Transect == "EvansHead")
+
+dat_sum_all_EH <- datX2_EH %>% group_by(Transect, Month, Year) %>% drop_na(Offshore_Inshore) %>% 
+  summarise(n = n(), mean = mean(Offshore_Inshore), median = median(Offshore_Inshore), sd = sd(Offshore_Inshore))
+dat_sum_all_EH
+dat_sum_all_EH$Transect <- factor(dat_sum_all_EH$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+# count all samples with a difference > 1
+dat_sum_EH <- datX2_EH %>% filter(Offshore_Inshore >= 1) %>% group_by(Transect, Month, Year) %>% drop_na() %>%
+  summarise(n = n())
+dat_sum_EH
+dat_sum_EH$Transect <- factor(dat_sum_EH$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+
+dat_sum_all_EH$Percent_1 <-  dat_sum_EH$n/dat_sum_all_EH$n *100
+dat_sum_all_EH <- dat_sum_all_EH %>% drop_na()
+dat_sum_all_EH
+
+# North Solitary
+# count all samples
+datX2_NS <- filter(datX, Transect == "NorthSolitary")
+
+dat_sum_all_NS <- datX2_NS %>% group_by(Transect, Month, Year) %>% drop_na(Offshore_Inshore) %>% 
+  summarise(n = n(), mean = mean(Offshore_Inshore), median = median(Offshore_Inshore), sd = sd(Offshore_Inshore))
+dat_sum_all_NS
+dat_sum_all_NS$Transect <- factor(dat_sum_all_NS$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+# count all samples with a difference > 1
+dat_sum_NS <- datX2_NS %>% filter(Offshore_Inshore >= 1) %>% group_by(Transect, Month, Year) %>% drop_na() %>%
+  summarise(n = n())
+dat_sum_NS
+dat_sum_NS$Transect <- factor(dat_sum_NS$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+dat_sum_all_NS$Percent_1 <-  dat_sum_NS$n/dat_sum_all_NS$n *100
+dat_sum_all_NS <- dat_sum_all_NS %>% drop_na()
+dat_sum_all_NS
+
+# Diamond Head
+# count all samples
+datX2_DH <- filter(datX, Transect == "DiamondHead")
+
+dat_sum_all_DH <- datX2_DH %>% group_by(Transect, Month, Year) %>% drop_na(Offshore_Inshore) %>% 
+  summarise(n = n(), mean = mean(Offshore_Inshore), median = median(Offshore_Inshore), sd = sd(Offshore_Inshore))
+dat_sum_all_DH
+dat_sum_all_DH$Transect <- factor(dat_sum_all_DH$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+# count all samples with a difference > 1
+dat_sum_DH <- datX2_DH %>% filter(Offshore_Inshore >= 1) %>% group_by(Transect, Month, Year) %>% drop_na() %>%
+  summarise(n = n())
+dat_sum_DH
+dat_sum_DH$Transect <- factor(dat_sum_DH$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+
+dat_sum_all_DH$Percent_1 <-  dat_sum_DH$n/dat_sum_all_DH$n *100
+dat_sum_all_DH <- dat_sum_all_DH %>% drop_na()
+dat_sum_all_DH
+### Merge all sites together into dataframe
+seasonal_full <- bind_rows(dat_sum_all_cb, dat_sum_all_EH, dat_sum_all_NS, dat_sum_all_DH)
+head(seasonal_full)
+
+
+dat_plot <- seasonal_full %>% group_by(Transect, Month) %>% summarise(mean_percent = mean(Percent_1),
+                                                                      sd = sd(Percent_1), n = n(),
+                                                                      SE = sd/sqrt(n))
+
+p_season <- ggplot(dat_plot, aes(x = Month, y = mean_percent, lty = Transect)) +  geom_point() +
+  geom_line(size = 1.5) + theme_classic() + ylab("Temperature Gradient > 1 °C (% ± SE)") +
+  geom_errorbar(aes(ymin=mean_percent-SE, ymax=mean_percent+SE), width=.2, show.legend = FALSE)+
+  theme(axis.title.x = element_text(face="bold", colour="black", size = 18),
+        axis.text.x  = element_text(colour="black", size = 14), 
+        axis.title.y = element_text(face="bold", colour="black", size = 18),
+        axis.text.y  = element_text(colour="black", size = 14),
+        legend.key.width = unit(3, "line"),
+        legend.position=c(.25, .8),
+        legend.title = element_text(size=14, face="bold"),
+        legend.text = element_text(size=10)) +
+  scale_x_continuous(limits=c(0.8, 12.1), breaks = c(1:12)) +
+  scale_linetype_discrete(name  ="Transect",
+                          breaks=c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"),
+                          labels=c("Cape Byron (28.6 °S)", "Evans Head (29 °S)", "North Solitary (30 °S)", "Diamond Head (31.8 °S)"))
+p_season
+
+ggsave("plots/Inshore Offshore Seasonal patterns 5km.png", dpi = 600, height = 14.8, width = 21, units ="cm")
+
+
+
+#########################################################################################################################
+### TO make with error bars for 15km offshore not 5
+#########################################################################################################################
+
+datX <- read_csv("Data/Temp gradient all sites.csv")
+datX$Transect <- factor(datX$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+datX <- filter(datX, Offshore_Inshore <= 8)
+head(datX)
+
+
+# count all samples
+dat_sum_all <- datX %>% group_by(Transect) %>% drop_na(Offshore_Inshore) %>% 
+  summarise(n = n(), mean = mean(Offshore_Inshore), median = median(Offshore_Inshore), sd = sd(Offshore_Inshore))
+dat_sum_all
+dat_sum_all$Transect <- factor(dat_sum_all$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+# count all samples with a difference > 1
+dat_sum <- datX %>% filter(Offshore_Inshore >= 1) %>% group_by(Transect) %>% drop_na() %>%
+  summarise(n = n())
+dat_sum
+dat_sum$Transect <- factor(dat_sum$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+
+p1 <- ggplot(datX, aes(x = Offshore_Inshore)) + geom_histogram(aes(y = stat(count / sum(count))), binwidth = 0.5) +
+  facet_wrap(~Transect) + theme_bw() + geom_vline(aes(xintercept = 0),lty = 2) +
+  xlab("Offshore - Inshore Temp (deg C)") + ylab("Proportion") +
+  geom_label(data = dat_sum, aes(x = 4.8, y = 0.075, 
+                                 label = paste("Mean: ", round(dat_sum_all$mean, 1), "\nMedian: ", 
+                                               round(dat_sum_all$median,1), "\nSD: ", round(dat_sum_all$sd, 1),
+                                               "\n% > 1 deg:", round(n/dat_sum_all$n *100,1))))
+p1
+
+#ggsave("plots/Inshore_Offshore_Temp_Gradiet_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
+
+# Check Seasonal Patterns
+# Cape Byron
+# count all samples
+datX2_cb <- filter(datX, Transect == "CapeByron")
+
+dat_sum_all_cb <- datX2_cb %>% group_by(Transect, Month, Year) %>% drop_na(Offshore_Inshore) %>% 
+  summarise(n = n(), mean = mean(Offshore_Inshore), median = median(Offshore_Inshore), sd = sd(Offshore_Inshore)) %>%
+  drop_na()
+dat_sum_all_cb
+dat_sum_all_cb$Transect <- factor(dat_sum_all_cb$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+# count all samples with a difference > 1
+dat_sum_cb <- datX2_cb %>% filter(Offshore_Inshore >= 1) %>% group_by(Transect, Month, Year) %>% drop_na() %>%
+  summarise(n = n()) %>% drop_na()
+dat_sum_cb
+dat_sum_cb$Transect <- factor(dat_sum_cb$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+#ggsave("plots/Inshore_Offshore_Temp_Gradiet CB Months_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
+
+dat_sum_all_cb$Percent_1 <-  dat_sum_cb$n/dat_sum_all_cb$n *100
+dat_sum_all_cb <- dat_sum_all_cb %>% drop_na()
+dat_sum_all_cb
+
+# Evans Head
+# count all samples
+datX2_EH <- filter(datX, Transect == "EvansHead")
+
+dat_sum_all_EH <- datX2_EH %>% group_by(Transect, Month, Year) %>% drop_na(Offshore_Inshore) %>% 
+  summarise(n = n(), mean = mean(Offshore_Inshore), median = median(Offshore_Inshore), sd = sd(Offshore_Inshore))
+dat_sum_all_EH
+dat_sum_all_EH$Transect <- factor(dat_sum_all_EH$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+# count all samples with a difference > 1
+dat_sum_EH <- datX2_EH %>% filter(Offshore_Inshore >= 1) %>% group_by(Transect, Month, Year) %>% drop_na() %>%
+  summarise(n = n())
+dat_sum_EH
+dat_sum_EH$Transect <- factor(dat_sum_EH$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+
+dat_sum_all_EH$Percent_1 <-  dat_sum_EH$n/dat_sum_all_EH$n *100
+dat_sum_all_EH <- dat_sum_all_EH %>% drop_na()
+dat_sum_all_EH
+
+# North Solitary
+# count all samples
+datX2_NS <- filter(datX, Transect == "NorthSolitary")
+
+dat_sum_all_NS <- datX2_NS %>% group_by(Transect, Month, Year) %>% drop_na(Offshore_Inshore) %>% 
+  summarise(n = n(), mean = mean(Offshore_Inshore), median = median(Offshore_Inshore), sd = sd(Offshore_Inshore))
+dat_sum_all_NS
+dat_sum_all_NS$Transect <- factor(dat_sum_all_NS$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+# count all samples with a difference > 1
+dat_sum_NS <- datX2_NS %>% filter(Offshore_Inshore >= 1) %>% group_by(Transect, Month, Year) %>% drop_na() %>%
+  summarise(n = n())
+dat_sum_NS
+dat_sum_NS$Transect <- factor(dat_sum_NS$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+dat_sum_all_NS$Percent_1 <-  dat_sum_NS$n/dat_sum_all_NS$n *100
+dat_sum_all_NS <- dat_sum_all_NS %>% drop_na()
+dat_sum_all_NS
+
+# Diamond Head
+# count all samples
+datX2_DH <- filter(datX, Transect == "DiamondHead")
+
+dat_sum_all_DH <- datX2_DH %>% group_by(Transect, Month, Year) %>% drop_na(Offshore_Inshore) %>% 
+  summarise(n = n(), mean = mean(Offshore_Inshore), median = median(Offshore_Inshore), sd = sd(Offshore_Inshore))
+dat_sum_all_DH
+dat_sum_all_DH$Transect <- factor(dat_sum_all_DH$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+# count all samples with a difference > 1
+dat_sum_DH <- datX2_DH %>% filter(Offshore_Inshore >= 1) %>% group_by(Transect, Month, Year) %>% drop_na() %>%
+  summarise(n = n())
+dat_sum_DH
+dat_sum_DH$Transect <- factor(dat_sum_DH$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
+
+
+
+dat_sum_all_DH$Percent_1 <-  dat_sum_DH$n/dat_sum_all_DH$n *100
+dat_sum_all_DH <- dat_sum_all_DH %>% drop_na()
+dat_sum_all_DH
+### Merge all sites together into dataframe
+seasonal_full <- bind_rows(dat_sum_all_cb, dat_sum_all_EH, dat_sum_all_NS, dat_sum_all_DH)
+head(seasonal_full)
+
+
+dat_plot <- seasonal_full %>% group_by(Transect, Month) %>% summarise(mean_percent = mean(Percent_1),
+                                                                      sd = sd(Percent_1), n = n(),
+                                                                      SE = sd/sqrt(n))
+
+p_season <- ggplot(dat_plot, aes(x = Month, y = mean_percent, lty = Transect)) +  geom_point() +
+  geom_line(size = 1.5) + theme_classic() + ylab("Temperature Gradient > 1 °C (% ± SE)") +
+  geom_errorbar(aes(ymin=mean_percent-SE, ymax=mean_percent+SE), width=.2, show.legend = FALSE)+
+  theme(axis.title.x = element_text(face="bold", colour="black", size = 18),
+        axis.text.x  = element_text(colour="black", size = 14), 
+        axis.title.y = element_text(face="bold", colour="black", size = 18),
+        axis.text.y  = element_text(colour="black", size = 14),
+        legend.key.width = unit(3, "line"),
+        legend.position=c(.25, .85),
+        legend.title = element_text(size=14, face="bold"),
+        legend.text = element_text(size=10)) +
+  scale_x_continuous(limits=c(0.8, 12.1), breaks = c(1:12)) +
+  scale_linetype_discrete(name  ="Transect",
+                          breaks=c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"),
+                          labels=c("Cape Byron (28.6 °S)", "Evans Head (29 °S)", "North Solitary (30 °S)", "Diamond Head (31.8 °S)"))
+p_season
+
+ggsave("plots/Inshore Offshore Seasonal patterns 15km.png", dpi = 600, height = 14.8, width = 21, units ="cm")
