@@ -41,14 +41,51 @@ full_dat <- full_dat %>% drop_na(Offshore_Inshore)
 full_dat$Transect <- factor(full_dat$Transect, levels = c("CapeByron", "EvansHead", "NorthSolitary", "DiamondHead"))
 
 hist(full_dat$`VCUR (m/s)`)
-full_dat$V_Current <- full_dat$`VCUR (m/s)`
 
-p1 <- ggplot(full_dat, aes(x = -V_Current, y = Offshore_Inshore)) + geom_point(alpha = 0.4) + 
+str(full_dat)
+
+#### Rotate for coastline
+
+full_dat$U_shore = 0
+full_dat$V_shore = 0
+for (i in 1:nrow(full_dat)){
+  if (full_dat$Transect[i] == "CapeByron") {
+    rot_deg_angle= -356
+    full_dat$U_shore[i] = cos(rot_deg_angle*pi/180)*full_dat$`UCUR (m/s)`[i] + sin(rot_deg_angle*pi/180)*full_dat$`VCUR (m/s)`[i]
+    full_dat$V_shore[i] = sin(rot_deg_angle*pi/180)*full_dat$`UCUR (m/s)`[i] + cos(rot_deg_angle*pi/180)*full_dat$`VCUR (m/s)`[i]
+  }
+  if (full_dat$Transect[i] == "DiamondHead") {
+    rot_deg_angle= -19
+    full_dat$U_shore[i] = cos(rot_deg_angle*pi/180)*full_dat$`UCUR (m/s)`[i] + sin(rot_deg_angle*pi/180)*full_dat$`VCUR (m/s)`[i]
+    full_dat$V_shore[i] = sin(rot_deg_angle*pi/180)*full_dat$`UCUR (m/s)`[i] + cos(rot_deg_angle*pi/180)*full_dat$`VCUR (m/s)`[i]
+  }
+  if (full_dat$Transect[i] == "EvansHead") {
+    rot_deg_angle= -13
+    full_dat$U_shore[i] = cos(rot_deg_angle*pi/180)*full_dat$`UCUR (m/s)`[i] + sin(rot_deg_angle*pi/180)*full_dat$`VCUR (m/s)`[i]
+    full_dat$V_shore[i] = sin(rot_deg_angle*pi/180)*full_dat$`UCUR (m/s)`[i] + cos(rot_deg_angle*pi/180)*full_dat$`VCUR (m/s)`[i]
+  }
+  if (full_dat$Transect[i] == "NorthSolitary") {
+    rot_deg_angle= -15
+    full_dat$U_shore[i] = cos(rot_deg_angle*pi/180)*full_dat$`UCUR (m/s)`[i] + sin(rot_deg_angle*pi/180)*full_dat$`VCUR (m/s)`[i]
+    full_dat$V_shore[i] = sin(rot_deg_angle*pi/180)*full_dat$`UCUR (m/s)`[i] + cos(rot_deg_angle*pi/180)*full_dat$`VCUR (m/s)`[i]
+  }
+}
+
+
+
+
+p1 <- ggplot(full_dat, aes(x = -V_shore, y = Offshore_Inshore)) + geom_point(alpha = 0.4) + 
   facet_wrap(~Transect) + theme_bw() + geom_smooth(method = "lm") +
-  xlab("Southward Current (m/s)") + ylab("Offshore - Inshore Temp (deg C)")
+  xlab("Alongshore Current (m/s)") + ylab("Offshore - Inshore Temp (deg C)") +
+  theme(axis.title.x = element_text(face="bold", colour="black", size = 18),
+        axis.text.x  = element_text(colour="black", size = 14), 
+        axis.title.y = element_text(face="bold", colour="black", size = 18),
+        axis.text.y  = element_text(colour="black", size = 14))
 p1
 
-ggsave("plots/Southward Current Temp Gradient Relationship.png", 
+ggsave("plots/Alongshore Current Temp Gradient Relationship_15km.png", 
+       height = 14.8, width = 21, dpi = 600, units = "cm")
+ggsave("plots/Alongshore Current Temp Gradient Relationship_15km.pdf", 
        height = 14.8, width = 21, dpi = 600, units = "cm")
 
 cor.test(full_dat$V_Current, full_dat$Offshore_Inshore)

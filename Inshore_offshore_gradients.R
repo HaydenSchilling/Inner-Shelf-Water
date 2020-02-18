@@ -387,7 +387,8 @@ p1 <- ggplot(datX, aes(x = Offshore_Inshore)) + geom_histogram(aes(y = stat(coun
                                                "\n% > 1 deg:", round(n/dat_sum_all$n *100,1))))
 p1
 
-#ggsave("plots/Inshore_Offshore_Temp_Gradiet_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
+ggsave("plots/Inshore_Offshore_Temp_Gradiet_5km.png", width = 21.8, height = 14.8, dpi = 600, units = "cm")
+ggsave("plots/Inshore_Offshore_Temp_Gradiet_5km.pdf", width = 21.8, height = 14.8, units = "cm")
 
 # Check Seasonal Patterns
 # Cape Byron
@@ -533,14 +534,20 @@ dat_sum$Transect <- factor(dat_sum$Transect, levels = c("CapeByron", "EvansHead"
 
 p1 <- ggplot(datX, aes(x = Offshore_Inshore)) + geom_histogram(aes(y = stat(count / sum(count))), binwidth = 0.5) +
   facet_wrap(~Transect) + theme_bw() + geom_vline(aes(xintercept = 0),lty = 2) +
-  xlab("Offshore - Inshore Temp (deg C)") + ylab("Proportion") +
+  xlab("Offshore - Inshore SST (°C)") + ylab("Proportion") +
   geom_label(data = dat_sum, aes(x = 4.8, y = 0.075, 
                                  label = paste("Mean: ", round(dat_sum_all$mean, 1), "\nMedian: ", 
                                                round(dat_sum_all$median,1), "\nSD: ", round(dat_sum_all$sd, 1),
-                                               "\n% > 1 deg:", round(n/dat_sum_all$n *100,1))))
+                                               "\n% > 1 °C:", round(n/dat_sum_all$n *100,1)))) +
+  theme(axis.title.x = element_text(face="bold", colour="black", size = 18),
+        axis.text.x  = element_text(colour="black", size = 14), 
+        axis.title.y = element_text(face="bold", colour="black", size = 18),
+        axis.text.y  = element_text(colour="black", size = 14))
 p1
 
-#ggsave("plots/Inshore_Offshore_Temp_Gradiet_5km.png", height = 21.8, width = 14.8*2, dpi = 600, units = "cm")
+ggsave("plots/Inshore_Offshore_Temp_Gradiet_15km.png", width = 21.8, height = 14.8, dpi = 600, units = "cm")
+ggsave("plots/Inshore_Offshore_Temp_Gradiet_15km.pdf", width = 21.8, height = 14.8, units = "cm")
+
 
 # Check Seasonal Patterns
 # Cape Byron
