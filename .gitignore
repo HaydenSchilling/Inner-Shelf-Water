@@ -7,3 +7,4 @@
 *.pptx
 *.Rhistory
 /Data/GEBCO*
+*.nc

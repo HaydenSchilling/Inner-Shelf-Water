@@ -263,7 +263,7 @@ for (j in sites){
 
   Bathy2 <- filter(Bathy, site == j)
 
-  fit1 <- with(mydata2, akima::interp(x = Distance_Coast, y = -Depth, z = log10(Abundance), nx = 100, ny = 100))
+  fit1 <- with(mydata2, akima::interp(x = Distance_Coast, y = -Depth, z = Abundance, nx = 100, ny = 100)) #z = log10(Abundance)
   fit2 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = Temp, nx = 100, ny = 100))
 
   df <- melt(fit1$z, na.rm = TRUE)
@@ -280,7 +280,7 @@ for (j in sites){
     geom_contour(aes(x = Distance_Coast, y = Depth, z = Temp), colour = "grey10", binwidth = 0.25, size = 0.2) +
     geom_contour(aes(x = Distance_Coast, y = Depth, z = Temp), colour = "grey10", binwidth = 1, size = 0.5) +
     geom_text_contour(aes(x = Distance_Coast, y = Depth, z = Temp), breaks = seq(16, 25)) +
-    scale_fill_distiller(palette = "Spectral", direction = -1, limits = c(0.45,  0.58), oob = scales::squish) +
+    scale_fill_distiller(palette = "Spectral", direction = -1 ) + #,limits = c(0.45,  0.58), oob = scales::squish
     geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5, size = 0.2) +
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5), size = 0.1, show.legend = FALSE) +
     geom_ribbon(data= Bathy2, aes(x = Distance_Coast, ymax = Bathymetry, ymin=-200), inherit.aes = FALSE, fill = "grey60") +
@@ -474,6 +474,26 @@ pTS
 ggsave("plots/zoop/TS plot by log10 biomass top 50.pdf", width=10, height=8)
 ggsave("plots/zoop/TS plot by log10 biomass top 50.png", width=10, height=8, dpi = 600)
 
+pTA <- ggplot(mydata2, aes(x = Salt, y = Temp, col = log10(Abundance))) + geom_point() + facet_wrap(~site) +
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100))
+pTA
+
+ggsave("plots/zoop/TS plot by log10 Abundance top 50.pdf", width=10, height=8)
+ggsave("plots/zoop/TS plot by log10 Abundance top 50.png", width=10, height=8, dpi = 600)
+
+pTA <- ggplot(mydata2, aes(x = Salt, y = Temp, col = ParetoSlope)) + geom_point() + facet_wrap(~site) +
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100))
+pTA
+
+ggsave("plots/zoop/TS plot by Pareto Slope top 50.pdf", width=10, height=8)
+ggsave("plots/zoop/TS plot by Pareto Slope top 50.png", width=10, height=8, dpi = 600)
+
+pTA <- ggplot(mydata2, aes(x = Salt, y = Temp, col = GeoMn*1000000)) + geom_point() + facet_wrap(~site) +
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100))
+pTA
+
+ggsave("plots/zoop/TS plot by GeoMn Size top 50.pdf", width=10, height=8)
+ggsave("plots/zoop/TS plot by GeoMn Size top 50.png", width=10, height=8, dpi = 600)
 
 pTSL <- ggplot(mydata2, aes(x = Salt, y = Temp, col = Depth)) + geom_point(alpha = 0.5) + facet_wrap(~site) +
   theme_classic() + scale_color_gradientn(colours = jet.colors(100))
