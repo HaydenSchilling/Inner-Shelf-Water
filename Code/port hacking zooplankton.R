@@ -110,3 +110,68 @@ ggplot(dat, aes(x = V_shore, y = ShannonCopepodDiversity)) + geom_point() +
 
 ggsave("plots/velocity plankton daily Port Hacking diversity.png", width = 21, height = 14.8, units = "cm", dpi = 600)
 ggsave("plots/velocity plankton daily Port Hacking diversity.pdf", width = 21, height = 14.8, units = "cm", dpi = 600)
+
+
+head(dat)
+
+dat2 <- filter(dat, Month > 8 & Month < 12)
+
+pTS <- ggplot(dat2, aes(x = Salt, y = Temp, col = log10(Biomass))) + geom_point() + 
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100)) +
+  theme(axis.title.x = element_text(face="bold", colour="black", size = 18),
+        axis.text.x  = element_text(colour="black", size = 16), 
+        axis.title.y = element_text(face="bold", colour="black", size = 18),
+        axis.text.y  = element_text(colour="black", size = 16))
+pTS
+
+
+### Load Biomass Data
+
+BDat <- read_csv("Data/NRS Biomass.csv")
+ADat <- read_csv("Data/NRS PH NS zooplankton abundance.csv")
+#WDat <- read_csv("Data/NRS Water Quality.csv")
+
+#WDat2 <- WDat %>% filter(SAMPLE_DEPTH_M <51) %>% group_by(STATION_NAME, LOCAL_TRIP_START_TIME) %>% summarise(Salinty = mean(SALINITY, na.rm=T))
+#WDat2
+
+head(BDat)
+
+BDat$Date <- str_split(BDat$LOCAL_TRIP_START_TIME, " ", simplify = TRUE)[,1]
+
+BDat$Date <- as.Date(BDat$Date, format = "%d/%m/%Y")
+#WDat2$Date <- date(WDat2$LOCAL_TRIP_START_TIME)
+
+#full_BDAT <- left_join(BDat, WDat2, b = c("STATION_NAME", "Date"))
+#full_BDAT <- full_BDAT %>% drop_na("Salinty")
+
+ADat$Date <- date(ADat$SampleDateLocal)
+ADat$STATION_NAME <- ADat$Station
+
+full_BDAT <- left_join(BDat, ADat, b = c("STATION_NAME", "Date"))
+
+full_BDAT <- full_BDAT %>% filter(Salinity_psu > 0 & SST_C > 0)
+
+pTS <- ggplot(full_BDAT, aes(x = Salinity_psu, y = SST_C, col = log10(MG_PER_M3))) + geom_point() + 
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100)) +
+  theme(axis.title.x = element_text(face="bold", colour="black", size = 18),
+        axis.text.x  = element_text(colour="black", size = 16), 
+        axis.title.y = element_text(face="bold", colour="black", size = 18),
+        axis.text.y  = element_text(colour="black", size = 16)) +
+  facet_wrap(~STATION_NAME)
+pTS
+
+ggsave("plots/NRS TS Zooplankton Plots.png", width = 21, height = 14.8, units = "cm", dpi = 600)
+
+# Only Sept - Nov
+full_BDAT2 <- filter(full_BDAT, Month > 8 & Month < 12)
+
+pTS <- ggplot(full_BDAT2, aes(x = Salinity_psu, y = SST_C, col = log10(MG_PER_M3))) + geom_point() + 
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100)) +
+  theme(axis.title.x = element_text(face="bold", colour="black", size = 18),
+        axis.text.x  = element_text(colour="black", size = 16), 
+        axis.title.y = element_text(face="bold", colour="black", size = 18),
+        axis.text.y  = element_text(colour="black", size = 16)) +
+  facet_wrap(~STATION_NAME)
+pTS
+
+ggsave("plots/NRS TS Zooplankton Plots spring.png", width = 21, height = 14.8, units = "cm", dpi = 600)

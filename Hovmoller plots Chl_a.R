@@ -35,7 +35,8 @@ EH <- tidync("Data/Chla_imos_download/IMOS_aggregation_20200324T025801Z.nc") %>%
 EH
 
 # Make dataframe
-EH_dat <- EH %>% hyper_tibble()
+EH_dat <- EH %>% hyper_tibble(na.rm=FALSE)
+nrow(EH_dat)
 
 # set date/day of year
 EH_dat$date <- as.Date(EH_dat$time, origin = "1800-01-01")
@@ -55,7 +56,7 @@ CB <- tidync("Data/Chla_imos_download/IMOS_aggregation_20200324T025801Z.nc") %>%
   hyper_filter(longitude = longitude < 154.15)
 CB
 
-CB_dat <- CB %>% hyper_tibble()
+CB_dat <- CB %>% hyper_tibble(na.rm=FALSE)
 CB_dat$date <- as.Date(CB_dat$time, origin = "1800-01-01")
 CB_dat$DAY_OF_YEAR <- yday(CB_dat$date)
 summary(CB_dat$DAY_OF_YEAR)
@@ -71,7 +72,7 @@ NS <- tidync("Data/Chla_imos_download/IMOS_aggregation_20200324T025801Z.nc") %>%
   hyper_filter(longitude = longitude < 154.15 & longitude >153)
 NS
 
-NS_dat <- NS %>% hyper_tibble()
+NS_dat <- NS %>% hyper_tibble(na.rm=FALSE)
 NS_dat$date <- as.Date(NS_dat$time, origin = "1800-01-01")
 NS_dat$DAY_OF_YEAR <- yday(NS_dat$date)
 summary(NS_dat$DAY_OF_YEAR)
@@ -87,7 +88,7 @@ DH <- tidync("Data/Chla_imos_download/IMOS_aggregation_20200324T025801Z.nc") %>%
   hyper_filter(longitude = longitude < 154.15)
 DH
 
-DH_dat <- DH %>% hyper_tibble()
+DH_dat <- DH %>% hyper_tibble(na.rm=FALSE)
 DH_dat$date <- as.Date(DH_dat$time, origin = "1800-01-01")
 DH_dat$DAY_OF_YEAR <- yday(DH_dat$date)
 summary(DH_dat$DAY_OF_YEAR)
@@ -101,10 +102,10 @@ head(DH_data)
 # Sydney
 PH <- tidync("Data/Chla_imos_download/IMOS_aggregation_20200324T025801Z.nc") %>% 
   hyper_filter(latitude = latitude < -33.32 & latitude > -33.52) %>% 
-  hyper_filter(longitude = longitude < 154.15)
+  hyper_filter(longitude = longitude < 154.15 & longitude >151.35)
 PH
 
-PH_dat <- PH %>% hyper_tibble()
+PH_dat <- PH %>% hyper_tibble(na.rm=FALSE)
 PH_dat$date <- as.Date(PH_dat$time, origin = "1800-01-01")
 PH_dat$DAY_OF_YEAR <- yday(PH_dat$date)
 summary(PH_dat$DAY_OF_YEAR)
@@ -132,7 +133,7 @@ sitesX <- data.frame(Site = c("Cape Byron", "Evans Head", "North Solitary", "Dia
 
 # Jet colour pallete
 jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
-
+full_dat <- full_dat %>% drop_na(CHL_A)
 
 library(ggplot2)
 p1 <- ggplot(full_dat, aes(x = longitude, y = DAY_OF_YEAR, fill = CHL_A)) + geom_tile() + #coord_flip() +
@@ -167,6 +168,7 @@ sitesX <- data.frame(Site = c("Cape Byron", "Evans Head", "North Solitary", "Dia
 # Jet colour pallete
 jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
 
+full_dat <- full_dat %>% drop_na(CHL_A)
 
 library(ggplot2)
 p1 <- ggplot(full_dat, aes(x = longitude, y = DAY_OF_YEAR, fill = CHL_A)) + geom_tile() + #coord_flip() +
