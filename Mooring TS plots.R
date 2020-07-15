@@ -37,3 +37,19 @@ pTS <- ggplot(dat2, aes(x = PSAL, y = TEMP)) + geom_point(alpha = 0.2) + theme_c
 pTS
 
 ggsave("plots/Mooring TS Plots for September.png", width = 21, height = 14.8, units = "cm", dpi = 600)
+
+
+# For Tom and barnacles
+
+dat2 <- dat %>% filter(Month ==2 & PSAL > 20)
+dat2$Year <- year(dat2$Date)
+dat2 <- filter(dat2, Year == 2019)
+dat2 <- filter(dat2, site_code != "NRSNSI")
+
+Syd_dat <- filter(dat2, site_code == "PH100" & DEPTH < 20)
+Syd_dat2 <- Syd_dat %>% group_by(Date) %>% summarise(Salinity_daily_ave = mean(PSAL))
+write_csv(Syd_dat2, "D:/Barnacles/Sydney Salinity Feb 2019.csv")
+
+Coffs_dat <- filter(dat2, site_code == "CH100")
+Coffs_dat2 <- Coffs_dat %>% group_by(Date) %>% summarise(Salinity_daily_ave = mean(PSAL))
+write_csv(Coffs_dat2, "D:/Barnacles/Coffs Salinity Feb 2019.csv")
