@@ -1,0 +1,21 @@
+Study,Region,Latitude,Longitude,Parameter,Ratio
+Becker et al 2018,Southwest Atlantic,-28,-47.5,Abundance,4.148275862
+Beckley 2018,Northwest Australia,-15.5,122,Biomass,4.060606061
+Coyle & Pinchuk 2005,Gulf of Alaska,59,-149,Abundance,2.59223301
+Irigoien et al,Bay of Biscay - East,45.5,-1.5,NBSS Slope,1.666666667
+Irigoien et al,Bay of Biscay - South,43.7,-2.5,NBSS Slope,1
+Lopes et al 2006,Southwest Atlantic,-25,-46,Biomass,2.916666667
+Marcolin et al 2013,Southwest Atlantic,-18.5,-39,Biomass,2.842931937
+Marcolin et al 2013,Southwest Atlantic,-18.5,-39,NBSS Slope,1.11627907
+Sabates et al 1989,Western Mediterranean,42.5,2,Biomass,0.05
+Skarðhamar et al 2007,Norwegian Sea,69.5,17,Abundance,2.666666667
+Sourisseau & Carlotti 2006,Bay of Biscay - East,45.5,-1.5,Abundance,21.875
+Sourisseau & Carlotti 2006,Bay of Biscay - East,45.5,-1.5,NBSS Slope,1.470588235
+Thompson et al 2013,Southwest Atlantic,-45,-58,Biomass,1.663194444
+Thompson et al 2013,Southwest Atlantic,-45,-58,NBSS Slope,1.414634146
+Vandromme et al ,Bay of Biscay - East,45.5,-1.5,NBSS Slope,1.75
+Vandromme et al ,Bay of Biscay - South,43.7,-2.5,NBSS Slope,0.944444444
+Zeldis & Willis 2015,New Zealand,-36.6,175,Abundance,2.326259947
+Schilling et al (This study),Eastern Australia (Current Study),-30,153.5,Biomass,2.742424242
+Schilling et al (This study),Eastern Australia (Current Study),-30,153.5,Abundance,3.007264957
+Schilling et al (This study),Eastern Australia (Current Study),-30,153.5,NBSS Slope,1.082568807

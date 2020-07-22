@@ -60,7 +60,18 @@ for (i in 1:nrow(Bathy)){
   }
 }
 
-
+# # Calculate some summary stats
+# # averages less than 50m deep
+# is.na(mydata) <- sapply(mydata, is.infinite)
+# dat <- mydata %>% filter(Distance_Coast < 20000) %>% 
+#   summarise(mean_Abund = mean(Abundance, na.rm = T), mean_Bio = mean(Biomass, na.rm = T), mean_Pareto = mean(ParetoSlope, na.rm = T))
+# 
+# dat
+# 
+# dat <- mydata %>% filter(Distance_Coast > 30000) %>% 
+#   summarise(mean_Abund = mean(Abundance, na.rm = T), mean_Bio = mean(Biomass, na.rm = T), mean_Pareto = mean(ParetoSlope, na.rm = T))
+# 
+# dat
 
 # # variables to loop through
 # vars = c("Temp", "Salt","GeoMn")# "NBSS.Slope",

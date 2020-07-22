@@ -72,7 +72,7 @@ str(full_dat)
 
 
 ## Load download code
-source("../../../IMOS Data/IMOS_Toolbox/fIMOS_MatchMODIS.R")
+source("E:/IMOS Data/IMOS_Toolbox/fIMOS_MatchMODIS.R")
 
 
 # Possible products
@@ -80,7 +80,7 @@ source("../../../IMOS Data/IMOS_Toolbox/fIMOS_MatchMODIS.R")
 #         "owtd", "npp_vgpm_eppley_oc3", "npp_vgpm_eppley_gsm", "nanop_brewin2012in",
 #         "nanop_brewin2010at", "l2_flags", "ipar", "dt", "chl_oc3", "chl_gsm", "K_490")
 
-pr <- c("chl_oc3", "sst") # select products here eg: "chl_oc3", "sst"
+pr <- c("chl_oc3") # select products here eg: "chl_oc3", "sst"
 # Set resolutions
 res_temp <- "1d" # temporal resolutions
 res_spat <- 10 # Return the average of res_spat x res_spat pixels
@@ -105,10 +105,21 @@ str(date_dat)
 
 dat$chl_oc3_1d[dat$chl_oc3_1d > 10] <- 10
 
-p1 <- ggplot(dat, aes(x = Date, y = log10(chl_oc3_1d + 0.5*min(dat$chl_oc3_1d, na.rm = T)))) + geom_line() + geom_point() +
-  facet_grid(Transect~East_West) + theme_classic() +
+library(ggthemes)
+
+labels <- c(CapeByron = "Cape Byron (28.6° S)", EvansHead = "Evans Head (29° S)", 
+            NorthSolitary ="North Solitary (30° S)", DiamondHead = "Diamond Head (31.7° S)")
+
+p1 <- ggplot(dat, aes(x = Date, y = log10(chl_oc3_1d + 0.5*min(dat$chl_oc3_1d, na.rm = T)), col=East_West)) + geom_line() + geom_point() +
+  facet_wrap(~Transect, ncol = 1, labeller=labeller(Transect = labels)) + theme_classic() +
   geom_vline(data = date_dat, aes(xintercept =  Date), col = "red", lty = 2) +
-  ylab ("log10(MODIS Chl_a)")
+  ylab(expression(bold(log[10](Chlorophyll~a~mg~m^-3)))) + scale_colour_colorblind(name = "Transect\nEdge") +
+  theme(axis.text = element_text(colour = "black"),
+        axis.title = element_text(face = "bold"),
+        legend.title = element_text(face="bold"),
+        legend.title.align = 0.5,
+        strip.text = element_text(face="bold"))
+  
 p1
 
 ggsave("plots/MODIS Chl_a month prior.png", height = 14.8, width = 21, units = "cm", dpi = 600)
