@@ -1,0 +1,226 @@
+# Interpolating plots
+
+#install.packages("akima")
+
+library(akima)
+library(ggplot2)
+library(reshape2)
+library(tidyverse)
+
+mydata <- read.csv("Data/HYD cleaned 080419.csv")
+str(mydata)
+head(mydata)
+
+### Get distance from shore
+library(geosphere)
+
+mydata$Distance_Coast = 0
+for (i in 1:nrow(mydata)){
+  #if (mydata$OPC_site[i] == "CB") {
+  #  mydata$Distance_Coast[i] = distm(c(153.58, -28.6), c(mydata$long3[i], mydata$lat3[i]), fun = distHaversine)
+  #}
+  if (mydata$OPC_site[i] == "DH") {
+    mydata$Distance_Coast[i] = distm(c(152.75, -31.8), c(mydata$long3[i], mydata$lat3[i]), fun = distHaversine)
+  }
+  if (mydata$OPC_site[i] == "EH") {
+    mydata$Distance_Coast[i] = distm(c(153.48, -29.0), c(mydata$long3[i], mydata$lat3[i]), fun = distHaversine)
+  }
+  if (mydata$OPC_site[i] == "NS") {
+    mydata$Distance_Coast[i] = distm(c(153.23, -30.0), c(mydata$long3[i], mydata$lat3[i]), fun = distHaversine)
+  }
+}
+
+
+
+### Get Bathymetry and add distance from coast
+Bathy <- read.csv("Data/Transect Bathymetry.csv", header = T)
+Bathy <- subset(Bathy, Bathymetry <= 0 ) # & Bathymetry > -200
+
+
+Bathy$Distance_Coast = 0
+for (i in 1:nrow(Bathy)){
+  if (Bathy$site[i] == "CapeByron") {
+    Bathy$Distance_Coast[i] = distm(c(153.58, -28.6), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+  if (Bathy$site[i] == "DiamondHead") {
+    Bathy$Distance_Coast[i] = distm(c(152.75, -31.8), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+  if (Bathy$site[i] == "EvansHead") {
+    Bathy$Distance_Coast[i] = distm(c(153.48, -29.0), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+  if (Bathy$site[i] == "NorthSolitary") {
+    Bathy$Distance_Coast[i] = distm(c(153.23, -30.0), c(Bathy$Longitude[i], Bathy$Latitude[i]), fun = distHaversine)
+  }
+}
+
+
+# variables to loop through
+vars = c("CTD.Sal", "CTD.Temp", "Oxygen", "Silicate","Nitrate")
+#sites to loop through
+sites = c("DH", "NS", "EH")
+sitesB = c("DiamondHead", "NorthSolitary", "EvansHead")
+
+# # Testing
+# for (i in vars){
+# 
+#   p1 <- ggplot(mydata, aes(x = long3, y = -Depth, col = get(i))) + geom_point() +
+#     facet_wrap(~OPC_site, scales = "free_x") + theme_bw()
+#   print(p1)
+# }
+# mydata2 <- subset(mydata, OPC_site == "EH")
+# str(mydata2)
+
+
+for (j in sites){
+  mydata2 <- subset(mydata, OPC_site == j)
+  for (i in vars){
+    #fit1 <- interp(x = mydata2$long3, y = -mydata2$Depth, z = mydata2$CTD.Sal)
+    fit1 <- interp(x = mydata2$long3, y = -mydata2$Depth, z = mydata2[[i]])
+    pdf(paste0('plots/CTD/',j,"_",i,'.pdf'), width=10, height=5)
+    print(filled.contour(fit1, zlim = c(min(mydata[[i]]), max(mydata[[i]])),
+                         plot.title = title(main = c(j, i))))
+    dev.off()
+    png(paste0('plots/CTD/',j,"_",i,'.png'), width=6000, height=3000, res = 600)
+    print(filled.contour(fit1, zlim = c(min(mydata[[i]]), max(mydata[[i]])),
+                         plot.title = title(main = c(j, i))))
+    dev.off()
+    pdf(paste0('plots/CTD/',j,"_",i,'_lines.pdf'), width=10, height=5)
+    print(contour(fit1, plot.title = title(main = c(j, i))))
+    dev.off()
+    png(paste0('plots/CTD/',j,"_",i,'_lines.png'), width=6000, height=3000, res = 600)
+    print(contour(fit1, plot.title = title(main = c(j, i))))
+    dev.off()
+  }
+}
+
+
+
+
+### CTD.Sal interpoLation and plots ---- need to fix bathymetry?
+for (j in 1:length(sites)){
+  mydata2 <- mydata %>% 
+    filter(OPC_site == sites[j] & is.na(Depth)==FALSE)
+  Bathy2 <- filter(Bathy, site == sitesB[j])
+  #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
+  #               nx = 100, ny = 100)
+  fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = CTD.Sal, nx = 100, ny = 100))
+  
+  df <- melt(fit1$z, na.rm = TRUE)
+  names(df) <- c("x", "y", "CTD.Sal")
+  df$Distance_Coast <- fit1$x[df$x]
+  df$Depth <- fit1$y[df$y]
+  
+  ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = CTD.Sal)) + 
+    geom_tile(data = df, aes(fill = CTD.Sal)) +
+    geom_contour(colour = "white", binwidth = 0.125) + 
+    scale_fill_distiller(palette = "RdBu", direction = -1, limits = c(min(mydata$CTD.Sal),max(mydata$CTD.Sal))) + 
+    #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
+    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
+    coord_cartesian(ylim=c(-(max(mydata2$Depth)), 0), xlim = c(0, max(mydata2$Distance_Coast)))+ # zooms in on the data without truncating data off the screen
+    ggtitle(paste0("CTD.Sal at ", sites[j]))
+  
+  ggsave(paste0('plots/CTD/',sites[j],"_CTD_Sal",'.pdf'),width = 10, height = 5)
+  ggsave(paste0('plots/CTD/',sites[j],"_CTD_Sal",'.png'),width = 10, height = 5, dpi = 600)
+  
+  # pdf(paste0('plots/zoop/',j,"_Biomass",'.pdf'), width=10, height=5)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+  # png(paste0('plots/zoop/',j,"_Biomass",'.png'), width=6000, height=3000, res = 600)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+}
+
+
+
+### CTD.Temp interpoLation and plots ---- need to fix bathymetry?
+for (j in 1:length(sites)){
+  mydata2 <- mydata %>% 
+    filter(OPC_site == sites[j] & is.na(Depth)==FALSE)
+  Bathy2 <- filter(Bathy, site == sitesB[j])
+  #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
+  #               nx = 100, ny = 100)
+  fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = CTD.Temp, nx = 100, ny = 100))
+  
+  df <- melt(fit1$z, na.rm = TRUE)
+  names(df) <- c("x", "y", "CTD.Temp")
+  df$Distance_Coast <- fit1$x[df$x]
+  df$Depth <- fit1$y[df$y]
+  
+  ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = CTD.Temp)) + 
+    geom_tile(data = df, aes(fill = CTD.Temp)) +
+    geom_contour(colour = "white", binwidth = 1) + 
+    scale_fill_distiller(palette = "RdBu", direction = -1, limits = c(min(mydata$CTD.Temp),max(mydata$CTD.Temp))) + 
+    #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
+    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
+    coord_cartesian(ylim=c(-(max(mydata2$Depth)), 0), xlim = c(0, max(mydata2$Distance_Coast)))+ # zooms in on the data without truncating data off the screen
+    ggtitle(paste0("CTD.Temp at ", sites[j]))
+  
+  ggsave(paste0('plots/CTD/',sites[j],"_CTD.Temp",'.pdf'),width = 10, height = 5)
+  ggsave(paste0('plots/CTD/',sites[j],"_CTD.Temp",'.png'),width = 10, height = 5, dpi = 600)
+  
+  # pdf(paste0('plots/zoop/',j,"_Biomass",'.pdf'), width=10, height=5)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+  # png(paste0('plots/zoop/',j,"_Biomass",'.png'), width=6000, height=3000, res = 600)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+}
+
+### Oxygen interpoLation and plots ---- need to fix bathymetry?
+for (j in 1:length(sites)){
+  mydata2 <- mydata %>% 
+    filter(OPC_site == sites[j] & is.na(Depth)==FALSE)
+  Bathy2 <- filter(Bathy, site == sitesB[j])
+  #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
+  #               nx = 100, ny = 100)
+  fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = Oxygen, nx = 100, ny = 100))
+  
+  df <- melt(fit1$z, na.rm = TRUE)
+  names(df) <- c("x", "y", "Oxygen")
+  df$Distance_Coast <- fit1$x[df$x]
+  df$Depth <- fit1$y[df$y]
+  
+  ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = Oxygen)) + 
+    geom_tile(data = df, aes(fill = Oxygen)) +
+    geom_contour(colour = "white", binwidth = 10) + 
+    scale_fill_distiller(palette = "RdBu", direction = -1, limits = c(min(mydata$Oxygen),max(mydata$Oxygen))) + 
+    #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
+    geom_line(data= Bathy2, aes(x = Distance_Coast, y = Bathymetry), inherit.aes = FALSE) +
+    coord_cartesian(ylim=c(-(max(mydata2$Depth)), 0), xlim = c(0, max(mydata2$Distance_Coast)))+ # zooms in on the data without truncating data off the screen
+    ggtitle(paste0("Oxygen at ", sites[j]))
+  
+  ggsave(paste0('plots/CTD/',sites[j],"_Oxygen",'.pdf'),width = 10, height = 5)
+  ggsave(paste0('plots/CTD/',sites[j],"_Oxygen",'.png'),width = 10, height = 5, dpi = 600)
+  
+  # pdf(paste0('plots/zoop/',j,"_Biomass",'.pdf'), width=10, height=5)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+  # png(paste0('plots/zoop/',j,"_Biomass",'.png'), width=6000, height=3000, res = 600)
+  # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
+  #       plot.title = title(main = c(j)))
+  # dev.off()
+}
+
+### TS Plots
+#install.packages("sommer")
+library(sommer) # for jet colour scheme
+
+head(mydata)
+
+#mydata3 <- subset(mydata, Depth > 10)
+
+pTS <- ggplot(mydata, aes(x = CTD.Sal, y = CTD.Temp, col = Nitrate)) + geom_point() + facet_wrap(~OPC_site) + 
+  theme_classic() + scale_color_gradientn(colours = jet.colors(100))
+pTS
+
+ggsave("plots/zoop/TS plot by Nitrate.pdf", width=10, height=8)
+ggsave("plots/zoop/TS plot by Nitrate.png", width=10, height=8, dpi = 600)
+

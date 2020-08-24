@@ -1,0 +1,25 @@
+#!/bin/bash
+ 
+
+#PBS -l nodes=1:ppn=1,mem=5gb
+
+#PBS -l walltime=12:00:00
+
+#PBS -j oe
+
+#PBS -M h.schilling@unsw.edu.au
+#PBS -m ae
+ 
+
+
+cd $HOME
+
+module purge
+
+
+module add R/3.5.3
+module add gcc/4.9.4
+
+
+
+Rscript temp_download5.R

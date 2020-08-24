@@ -1,12 +1,14 @@
-/Yates Extra code etc/*
-/Endnote/*
-.Rproj.user
 /plots/*
-/resources/Oceanographic*
+Other prepublication stuff/Yates Extra code etc/*
+Other prepublication stuff/Endnote/*
+Other prepublication stuff.Rproj.user
+Other prepublication stuff/plots/*
+Other prepublication stuff/resources/Oceanographic*
 .Rhistory
 *.pptx
 *.Rhistory
-/Data/GEBCO*
+Other prepublication stuff/Other Data/GEBCO*
 *.nc
-/Data/Mooring*
+Other prepublication stuff/Other Data/Mooring*
 *.html
+.Rproj*
