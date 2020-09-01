@@ -10,7 +10,7 @@ library(patchwork)
 library(metR)
 library(geosphere)
 
-mydata <- read.csv("../Data/ADP_tows_final_300419.csv")
+mydata <- read.csv("Data/ADP_tows_final_300419.csv")
 str(mydata)
 head(mydata)
 
@@ -37,7 +37,7 @@ for (i in 1:nrow(mydata)){
 
 
 ### Get Bathymetry and add distance from coast
-Bathy <- read.csv("../Data/Transect Bathymetry.csv", header = T)
+Bathy <- read.csv("Data/Transect Bathymetry.csv", header = T)
 Bathy <- subset(Bathy, Bathymetry < -1 & Bathymetry > -300)
 
 
@@ -58,7 +58,7 @@ for (i in 1:nrow(Bathy)){
 }
 
 
- 
+
 # velocity rotation (to align with coastline):
 # # Cb = 356 degree, EH = 13 degree, NS = 15 degree, DH = 19 degree
 
@@ -133,6 +133,48 @@ Bathy$site2[Bathy$site == "DiamondHead"] <- "DH"
 #   }
 # }
 
+### Prepare Temp to overlay
+
+mydataT <- read_csv("Data/SS2004_SeaSoarData.csv")
+#str(mydataT)
+#head(mydataT)
+
+mydataT <- mydataT %>%
+  mutate(site = case_when(site = str_detect(File,"SS0408_023") ~ "CapeByron",
+                          site = str_detect(File,"SS0408_021") ~ "EvansHead",
+                          site = str_detect(File,"SS0408_010") ~ "NorthSolitary",
+                          site = str_detect(File,"SS0408_008") ~ "DiamondHead"),
+         site = as.factor(site))
+
+mydataT <- subset(mydataT, Depth > 13)
+
+### Get distance from shore
+mydataT$Distance_Coast = 0
+for (i in 1:nrow(mydataT)){
+  if (mydataT$site[i] == "CapeByron") {
+    mydataT$Distance_Coast[i] = distm(c(153.58, -28.6), c(mydataT$Lon[i], mydataT$Lat[i]), fun = distHaversine)
+  }
+  if (mydataT$site[i] == "DiamondHead") {
+    mydataT$Distance_Coast[i] = distm(c(152.75, -31.8), c(mydataT$Lon[i], mydataT$Lat[i]), fun = distHaversine)
+  }
+  if (mydataT$site[i] == "EvansHead") {
+    mydataT$Distance_Coast[i] = distm(c(153.48, -29.0), c(mydataT$Lon[i], mydataT$Lat[i]), fun = distHaversine)
+  }
+  if (mydataT$site[i] == "NorthSolitary") {
+    mydataT$Distance_Coast[i] = distm(c(153.23, -30.0), c(mydataT$Lon[i], mydataT$Lat[i]), fun = distHaversine)
+  }
+}
+
+
+# # variables to loop through
+# vars = c("Temp", "Salt","GeoMn")# "NBSS.Slope",
+# #sites to loop through
+sitesT <- levels(mydataT$site)
+sitesT <- sitesT[c(1,3,4,2)]
+
+
+
+site_labels <- c("Cape Byron (28.6°S)", "Evans Head (29°S)" ,"North Solitary (30°S)", "Diamond Head (31.7°S)")
 
 ### V_Shore interpoLation and plots
 
@@ -175,73 +217,66 @@ for (j in sites){
   #names(df2) <- c("x", "y", "Temp")
   #df$Temp <- df2$Temp
   
-  pl[[j]] <- ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = Alongshore_Velocity)) +
+  pl[[j]] <- ggplot(data = df, mapping = aes(x = Distance_Coast/1000, y = Depth, z = Alongshore_Velocity)) +
     geom_tile(aes(fill = Alongshore_Velocity)) + ylab("Depth (m)") +
-    geom_contour(aes(x = Distance_Coast, y = Depth, z = Alongshore_Velocity), colour = "grey10", binwidth = 0.2, size = 0.2) +
-    #geom_contour(aes(x = Distance_Coast, y = Depth, z = Temp), colour = "grey10", binwidth = 1, size = 0.5) +
-    geom_text_contour(aes(x = Distance_Coast, y = Depth, z = Alongshore_Velocity), breaks = seq(-1.8, 1.6, by = 0.2)) + # 
-    scale_fill_distiller(palette = "Spectral", direction = -1, limits = c(-0.3,  0.3), oob = scales::squish,
-                         name=expression("Alongshore\nVelocity"*(m~s^-1))) +
+    geom_contour(aes(x = Distance_Coast/1000, y = Depth, z = Alongshore_Velocity), colour = "grey10", binwidth = 0.2, size = 0.2) +
+    #geom_contour(aes(x = Distance_Coast, y = Depth, z = Temp), colour = "red", binwidth = 1, size = 0.5) +
+    geom_text_contour(aes(x = Distance_Coast/1000, y = Depth, z = Alongshore_Velocity), breaks = seq(-1.8, 1.6, by = 0.2)) + # 
+    scale_fill_distiller(palette = "Spectral", direction = -1, limits = c(-1.5,  1.5), oob = scales::squish,
+                         name=expression(bold("Alongshore Velocity "(m~s^-1)))) +
     #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5, size = 0.2) +
-    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5), size = 0.1, show.legend = FALSE, inherit.aes = FALSE) +
-    geom_ribbon(data= Bathy2, aes(x = Distance_Coast, ymax = Bathymetry, ymin=-300), inherit.aes = FALSE, fill = "grey60") +
-    geom_text(x = 12010, y = -230, label = paste0("Alongshore Velocity at ", j[1]), stat = "identity", inherit.aes = FALSE, hjust = 0) +
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast/1000, y = -Depth, alpha = 0.5), size = 0.1, show.legend = FALSE, inherit.aes = FALSE) +
+    geom_ribbon(data= Bathy2, aes(x = Distance_Coast/1000, ymax = Bathymetry, ymin=-300), inherit.aes = FALSE, fill = "grey60") +
     theme_classic() +
     theme(plot.margin = unit(c(0,0,0,0), "mm"),
           axis.text  = element_text(colour="black")) +
     xlab(element_blank()) +
-    scale_x_continuous(limits = c(12000, 48000), expand = c(0, 0)) +
+    #scale_x_continuous( expand = c(0, 0)) + #limits = c(12, 48),
     #scale_y_continuous(expand = c(0, 0), limits = c(-250,0)) +
-    coord_cartesian(xlim = NULL, ylim = c(-250,0), expand = TRUE,
+    coord_cartesian(xlim = c(12, 48), ylim = c(-250,0), expand = TRUE,
                     default = FALSE, clip = "on") +
-    guides(size = "none", shape = "none")
+    guides(size = "none", shape = "none") +
+    theme(legend.title = element_text(angle = 270, hjust= 0.5),
+          axis.title = element_text(face = "bold")) + guides(fill = guide_colorbar(title.position = "right"))
   # + geom_polygon(data = Limits, mapping = aes(x = Distance_Coast, y = -maxD), inherit.aes = FALSE, colour = "white")
 }
 
-pl[[4]] <- pl[[4]] + xlab("Distance from Coastline")
-pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect')
 
-ggsave(paste0('../plots/ADCP/V_rotated_All','.png'), dpi = 600)
-ggsave(paste0('../plots/ADCP/V_rotated_All','.pdf'), dpi = 600)
+letters <- c("A) ", "B) ", "C) ", "D) " )
 
 
-### OLD PLOTTING
 
-# for (j in 1:length(sites)){
-#   mydata2 <- mydata %>% 
-#     filter(OPC_site == sites[j] & is.na(Depth)==FALSE)
-#   Bathy2 <- filter(Bathy, site == sitesB[j])
-#   #fit1 <- interp(x = mydata2$Distance_Coast, y = -mydata2$Depth, z = log10(mydata2$Biomass), 
-#   #               nx = 100, ny = 100)
-#   fit1 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = V_shore, nx = 100, ny = 100))
-#   
-#   df <- melt(fit1$z, na.rm = TRUE)
-#   names(df) <- c("x", "y", "V_shore")
-#   df$Distance_Coast <- fit1$x[df$x]
-#   df$Depth <- fit1$y[df$y]
-#   
-#   ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = V_shore)) + 
-#     geom_tile(data = df, aes(fill = V_shore)) +
-#     geom_contour(colour = "white", binwidth = 0.125) + 
-#     scale_fill_distiller(palette = "RdBu", direction = -1, limits = c(-2,  2)) + 
-#     #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5) + 
-#     geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5)) +
-#     geom_ribbon(data= Bathy2, aes(x = Distance_Coast, ymax = Bathymetry, ymin=-300), inherit.aes = FALSE, fill = "grey60") +
-#     ggtitle(paste0("V_shore at ", sites[j]))
-#   
-#   ggsave(paste0('plots/ADCP/',sites[j],"_V_shore",'.pdf'),width = 10, height = 5)
-#   ggsave(paste0('plots/ADCP/',sites[j],"_V_shore",'.png'),width = 10, height = 5, dpi = 600)
-#   
-#   # pdf(paste0('plots/zoop/',j,"_Biomass",'.pdf'), width=10, height=5)
-#   # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
-#   #       plot.title = title(main = c(j)))
-#   # dev.off()
-#   # png(paste0('plots/zoop/',j,"_Biomass",'.png'), width=6000, height=3000, res = 600)
-#   # print(filled.contour(fit1, zlim = c(min(log10(mydata$Biomass)), log10(mydata$Biomass))),
-#   #       plot.title = title(main = c(j)))
-#   # dev.off()
-# }
+#Add Temperature line (21 deg C isotherm from Seasoar)
+for (j in 1:length(sitesT)){
+  mydata2T <- mydataT %>%
+    filter(site == sitesT[j] & is.na(Depth) == FALSE & is.na(Biomass)==FALSE) %>%
+    select(c(Distance_Coast, Depth, Biomass, cast_no, Temp))
+  
+  pl[[j]]  
+  fit2 <- with(mydata2T, interp(x = Distance_Coast, y = -Depth, z = Temp, nx = 100, ny = 100))
+  
+  df2 <- melt(fit2$z, na.rm = TRUE)
+  names(df2) <- c("x", "y", "Temp")
+  df2$Distance_Coast <- fit2$x[df2$x]
+  df2$Depth <- fit2$y[df2$y]
+  
+  pl[[j]] <- pl[[j]] + geom_contour(data = df2, inherit.aes = F,
+                                    aes(x = Distance_Coast/1000, y = Depth, z = Temp),
+                                    colour = "red", breaks = c(21), size = 1) +
+    #geom_text_contour(data = df2, inherit.aes = F,
+    #  aes(x = Distance_Coast/1000, y = Depth, z = Temp), 
+    #  breaks = c(21), colour = "brown")
+    geom_text(x = 12.01, y = -230, 
+              label = paste0(letters[j],site_labels[j]), stat = "identity", 
+              inherit.aes = FALSE, hjust = 0)
+  
+}
 
+pl[[4]] <- pl[[4]] + xlab("Distance from Coastline (km)")
+pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect') & theme(legend.key.height = unit(3.9, "cm"))
+
+ggsave(paste0('Other prepublication stuff/plots/ADCP/V_rotated_All_with Temp','.png'), dpi = 600, height = 21, width = 18, units = "cm")
+ggsave(paste0('Other prepublication stuff/plots/ADCP/V_rotated_All_with_Temp','.pdf'), dpi = 600, height = 21, width = 18, units = "cm")
 
 ### U_Shore interpoLation and plots
 pl <- list()
@@ -281,34 +316,66 @@ for (j in sites){
   #names(df2) <- c("x", "y", "Temp")
   #df$Temp <- df2$Temp
   
-  pl[[j]] <- ggplot(data = df, mapping = aes(x = Distance_Coast, y = Depth, z = Cross_shelf_Velocity)) +
+  pl[[j]] <- ggplot(data = df, mapping = aes(x = Distance_Coast/1000, y = Depth, z = Cross_shelf_Velocity)) +
     geom_tile(aes(fill = Cross_shelf_Velocity)) + ylab("Depth (m)") +
-    geom_contour(aes(x = Distance_Coast, y = Depth, z = Cross_shelf_Velocity), colour = "grey10", binwidth = 0.2, size = 0.2) +
-    #geom_contour(aes(x = Distance_Coast, y = Depth, z = Temp), colour = "grey10", binwidth = 1, size = 0.5) +
-    geom_text_contour(aes(x = Distance_Coast, y = Depth, z = Cross_shelf_Velocity), breaks = seq(-0.25,  0.25, by = 0.05)) + # 
-    scale_fill_distiller(palette = "Spectral", direction = -1, limits = c(-0.3,  0.3), oob = scales::squish,
-                         name=expression("Cross-shelf\nVelocity"*(m~s^-1))) +
+    geom_contour(aes(x = Distance_Coast/1000, y = Depth, z = Cross_shelf_Velocity), colour = "grey10", binwidth = 0.2, size = 0.2) +
+    #geom_contour(aes(x = Distance_Coast, y = Depth, z = Temp), colour = "red", binwidth = 1, size = 0.5) +
+    geom_text_contour(aes(x = Distance_Coast/1000, y = Depth, z = Cross_shelf_Velocity), breaks = seq(-1.8, 1.6, by = 0.2)) + # 
+    scale_fill_distiller(palette = "Spectral", direction = -1, limits = c(-0.25,  0.25), oob = scales::squish,
+                         name=expression(bold("Cross Shelf Velocity "(m~s^-1)))) +
     #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5, size = 0.2) +
-    geom_point(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth, alpha = 0.5), size = 0.1, show.legend = FALSE, inherit.aes = FALSE) +
-    geom_ribbon(data= Bathy2, aes(x = Distance_Coast, ymax = Bathymetry, ymin=-300), inherit.aes = FALSE, fill = "grey60") +
-    geom_text(x = 12010, y = -230, label = paste0("Cross-shelf Velocity at ", j[1]), stat = "identity", inherit.aes = FALSE, hjust = 0) +
+    geom_point(data = mydata2, mapping = aes(x = Distance_Coast/1000, y = -Depth, alpha = 0.5), size = 0.1, show.legend = FALSE, inherit.aes = FALSE) +
+    geom_ribbon(data= Bathy2, aes(x = Distance_Coast/1000, ymax = Bathymetry, ymin=-300), inherit.aes = FALSE, fill = "grey60") +
     theme_classic() +
     theme(plot.margin = unit(c(0,0,0,0), "mm"),
           axis.text  = element_text(colour="black")) +
     xlab(element_blank()) +
-    scale_x_continuous(limits = c(12000, 48000), expand = c(0, 0)) +
+    #scale_x_continuous( expand = c(0, 0)) + #limits = c(12, 48),
     #scale_y_continuous(expand = c(0, 0), limits = c(-250,0)) +
-    coord_cartesian(xlim = NULL, ylim = c(-250,0), expand = TRUE,
+    coord_cartesian(xlim = c(12, 48), ylim = c(-250,0), expand = TRUE,
                     default = FALSE, clip = "on") +
-    guides(size = "none", shape = "none")
+    guides(size = "none", shape = "none")+
+    theme(legend.title = element_text(angle = 270, hjust= 0.5),
+          axis.title = element_text(face = "bold")) + guides(fill = guide_colorbar(title.position = "right"))
   # + geom_polygon(data = Limits, mapping = aes(x = Distance_Coast, y = -maxD), inherit.aes = FALSE, colour = "white")
 }
 
-pl[[4]] <- pl[[4]] + xlab("Distance from Coastline")
-pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect')
 
-ggsave(paste0('../plots/ADCP/U_rotated_All','.png'), dpi = 600)
-ggsave(paste0('../plots/ADCP/U_rotated_All','.pdf'), dpi = 600)
+letters <- c("A) ", "B) ", "C) ", "D) " )
+
+
+
+#Add Temperature line (21 deg C isotherm from Seasoar)
+for (j in 1:length(sitesT)){
+  mydata2T <- mydataT %>%
+    filter(site == sitesT[j] & is.na(Depth) == FALSE & is.na(Biomass)==FALSE) %>%
+    select(c(Distance_Coast, Depth, Biomass, cast_no, Temp))
+  
+  pl[[j]]  
+  fit2 <- with(mydata2T, interp(x = Distance_Coast, y = -Depth, z = Temp, nx = 100, ny = 100))
+  
+  df2 <- melt(fit2$z, na.rm = TRUE)
+  names(df2) <- c("x", "y", "Temp")
+  df2$Distance_Coast <- fit2$x[df2$x]
+  df2$Depth <- fit2$y[df2$y]
+  
+  pl[[j]] <- pl[[j]] + geom_contour(data = df2, inherit.aes = F,
+                                    aes(x = Distance_Coast/1000, y = Depth, z = Temp),
+                                    colour = "red", breaks = c(21), size = 1) +
+    #geom_text_contour(data = df2, inherit.aes = F,
+    #  aes(x = Distance_Coast/1000, y = Depth, z = Temp), 
+    #  breaks = c(21), colour = "brown")
+    geom_text(x = 12.01, y = -230, 
+              label = paste0(letters[j],site_labels[j]), stat = "identity", 
+              inherit.aes = FALSE, hjust = 0)
+  
+}
+
+pl[[4]] <- pl[[4]] + xlab("Distance from Coastline (km)")
+pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect') & theme(legend.key.height = unit(3.9, "cm"))
+
+ggsave(paste0('Other prepublication stuff/plots/ADCP/U_rotated_All_with Temp','.png'), dpi = 600, height = 21, width = 18, units = "cm")
+ggsave(paste0('Other prepublication stuff/plots/ADCP/U_rotated_All_with_Temp','.pdf'), dpi = 600, height = 21, width = 18, units = "cm")
 
 
 

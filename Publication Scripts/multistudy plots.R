@@ -26,7 +26,7 @@ p1 <- ggplot(mydata, aes(y = Ratio, x = Bathy, label = `Reference Number`)) + ge
         panel.background = element_rect(fill = NA, color = "black"))
 p1
 
-ggsave("../Plots/Multistudy plot.png", dpi = 600, height = 12, width = 12, units = "cm")
+#ggsave("../Plots/Multistudy plot.png", dpi = 600, height = 12, width = 12, units = "cm")
 
 
 # World map
@@ -43,7 +43,7 @@ mydata2 <- mydata %>% distinct(`Reference Number`, .keep_all = TRUE)
 
 P_map <- ggplot() +
   geom_sf(data = world, col="grey70", fill = "grey70") +
-  geom_point(data = mydata2, aes(x = Longitude, y = Latitude), size = 2, 
+  geom_point(data = mydata2, aes(x = Longitude, y = Latitude), size = 1.5, 
              shape = 21, fill = "blue") +
   geom_text_repel(data = mydata2, aes(x = Longitude, y = Latitude, label = `Reference Number`),col="black", size =3.5, fontface = "bold") +
   theme_bw() +
@@ -54,7 +54,7 @@ P_map <- ggplot() +
 
 P_map
 
-ggsave("world map test.png", dpi = 600, units = "cm", height = 12.8, width = 21)
+#ggsave("world map test.png", dpi = 600, units = "cm", height = 12.8, width = 21)
 
 
 # Abundance only plot
@@ -64,12 +64,12 @@ mydata_a <- mydata %>% filter(Parameter == "Abundance")
 pA <- ggplot(mydata_a, aes(y = Ratio, x = Bathy, label = `Reference Number`)) + geom_point(size = 2) +
   theme_classic() + geom_hline(yintercept = 1, col= "red", lty=2) +
   ylab("Inshore:Offshore Ratio") + geom_errorbarh(aes(xmin=Inhore_Bath, xmax=Offshore_Bathy), col = "grey60",height=0)+
-  scale_x_log10()+ xlab("") + geom_text_repel(col="blue")+
+  scale_x_log10()+ xlab("Bathymetry (m)") + geom_text_repel(col="blue")+
   scale_y_log10(breaks = c(1,3,10,20, 25))+
   #scale_color_manual(values=cbPalette) +
   theme(axis.title = element_text(face = "bold", size = 12),
         axis.text = element_text(colour = "black", size = 10)) +
-  ggtitle('a) Abundance')
+  ggtitle('A) Abundance')
 pA
 
 # Biomass only plot
@@ -83,7 +83,7 @@ pB <- ggplot(mydata_b, aes(y = Ratio, x = Bathy, label = `Reference Number`)) + 
   #scale_color_manual(values=cbPalette) +
   theme(axis.title = element_text(face = "bold", size = 12),
         axis.text = element_text(colour = "black", size = 10))+
-  ggtitle('b) Biomass')
+  ggtitle('B) Biomass')
 pB
 
 # NBSS Slope only plot
@@ -92,7 +92,7 @@ mydata_s <- mydata %>% filter(Parameter == "NBSS Slope")
 
 pC <- ggplot(mydata_s, aes(y = Ratio, x = Bathy, label = `Reference Number`)) + geom_point(size = 2) +
   theme_classic() + geom_hline(yintercept = 1, col= "red", lty=2) +
-  ylab("Inshore:Offshore Ratio") +
+  ylab("") +
   geom_errorbarh(aes(xmin=Inhore_Bath, xmax=Offshore_Bathy), col = "grey60",height=0)+
   scale_x_log10()+ xlab("Bathymetry (m)") + geom_text_repel(col="blue")+
   scale_y_continuous(breaks=c(1,1.2,1.4,1.6,1.8), limits = c(0.9,1.8), expand = c(0,0))+
@@ -100,7 +100,7 @@ pC <- ggplot(mydata_s, aes(y = Ratio, x = Bathy, label = `Reference Number`)) + 
   theme(axis.title = element_text(face = "bold", size = 12),
         axis.text.x = element_text(colour = "black", size = 10),
         axis.text.y = element_text(color = "black", size=10))+
-  ggtitle('c) NBSS Slope')
+  ggtitle('C) Size Spectra Slope')
 pC
 
 
@@ -108,8 +108,26 @@ library(patchwork)
 p_final <- P_map + pA + pB + pC + plot_layout(ncol = 1, guides = 'collect')
 p_final
 
-ggsave("multiplot test.png", dpi = 600, units = "in", height = 10, width = 3.5)
+#ggsave("multiplot test.png", dpi = 600, units = "in", height = 10, width = 3.5)
 
 p_final2 <-  pA + pB + pC + P_map + plot_layout(ncol = 2, widths = c(1, 1))
 p_final2
-ggsave("multiplot test square.png", dpi = 600, units = "cm", height = 14.8, width = 21)
+#ggsave("multiplot test square.png", dpi = 600, units = "cm", height = 14.8, width = 21)
+
+
+## Attempt to plot a table in ggplot
+#library(gridExtra)
+
+mydata3 <- mydata2 %>% select(`Reference Number`, Region, Study)
+mydata3 <- mydata3 %>% rename("Ref. #" = `Reference Number`)
+mydata3
+
+tt2 <- gridExtra::ttheme_minimal(base_size = 10, padding = unit(c(1.5,1.5),"mm"))
+
+
+t_test <- (pA + pB + pC) / (P_map + gridExtra::tableGrob(mydata3, theme = tt2, rows = NULL)) + plot_layout(heights = c(0.69,1))
+t_test
+
+#ggsave("Other prepublication stuff/plots/multiplot final.png", dpi = 600, units = "cm", height = 14.8, width = 21)
+#ggsave("Other prepublication stuff/plots/multiplot final.pdf", dpi = 600, units = "cm", height = 14.8, width = 21)
+### Note one author name edited later to get correct symbol.

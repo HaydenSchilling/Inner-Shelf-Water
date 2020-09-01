@@ -11,7 +11,7 @@ library(metR)
 library(geosphere)
 
 
-mydata <- read_csv("../Data/SS2004_SeaSoarData.csv")
+mydata <- read_csv("Data/SS2004_SeaSoarData.csv")
 str(mydata)
 head(mydata)
 
@@ -64,7 +64,7 @@ for (i in 1:nrow(mydata)){
 
 
 ### Get Bathymetry and add distance from coast
-Bathy <- read.csv("../Data/Transect Bathymetry.csv", header = T)
+Bathy <- read.csv("Data/Transect Bathymetry.csv", header = T)
 Bathy <- subset(Bathy, Bathymetry < -1 & Bathymetry >= -200)
 
 
@@ -95,6 +95,7 @@ sites <- sites[c(1,3,4,2)]
 #label_list <- c("Cape Byron (28.6° S)", "Evans Head (29° S)", "North Solitary (30° S)", "Diamond Head (31.75° S)")
 site_labels <- c("Cape Byron (28.6°S)", "Evans Head (29°S)" ,"North Solitary (30°S)", "Diamond Head (31.7°S)")
 
+letters <- c("A) ", "B) ", "C) ", "D) " )
 
 ### Biomass interpoLation and plots
 pl <- list()
@@ -144,7 +145,7 @@ for (j in 1:length(sites)){
     geom_line(data = mydata2, mapping = aes(x = Distance_Coast/1000, y = -Depth), alpha = 0.5, size = 0.2) +
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast/1000, y = -Depth, alpha = 0.5), size = 0.1, show.legend = FALSE) +
     geom_ribbon(data= Bathy2, aes(x = Distance_Coast/1000, ymax = Bathymetry, ymin=-200), inherit.aes = FALSE, fill = "grey60") +
-    geom_text(x = 12.010, y = -120, label = paste0("Biomass at \n", site_labels[j]), stat = "identity", inherit.aes = FALSE, hjust = 0) +
+    geom_text(x = 12.010, y = -120, label = paste0(letters[j],"Biomass at \n", site_labels[j]), stat = "identity", inherit.aes = FALSE, hjust = 0) +
     theme_classic() +
     theme(plot.margin = unit(c(0,0,0,0), "mm"),
           axis.text  = element_text(colour="black"),
@@ -153,16 +154,18 @@ for (j in 1:length(sites)){
     coord_cartesian(xlim = c(13, 48), expand = TRUE, ylim = c(-140,-10)) +
     #scale_x_continuous(limits = c(12, 48), expand = c(0, 0)) +
     scale_y_continuous(expand = c(0, 0), breaks = c(-125,-100,-75,-50,-25)) +
-    theme(legend.title.align = 0)+
-    guides(size = "none", shape = "none")
+    #theme(legend.title.align = 0)+
+    guides(size = "none", shape = "none") +
+    theme(legend.title = element_text(angle = 270, hjust= 0.5, size = 12),
+          axis.title = element_text(face = "bold")) + guides(fill = guide_colorbar(title.position = "right"))
   # + geom_polygon(data = Limits, mapping = aes(x = Distance_Coast, y = -maxD), inherit.aes = FALSE, colour = "white")
 }
 
 pl[[4]] <- pl[[4]] + xlab("Distance from Coastline (km)")
-pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect')
+pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect') & theme(legend.key.height = unit(3.9, "cm"))
 
-ggsave(paste0('../plots/zoop/Biomass_All','.png'), dpi = 600, height = 21, width = 18, units = "cm")
-ggsave(paste0('../plots/zoop/Biomass_All','.pdf'), dpi = 600, height = 21, width = 18, units = "cm")
+ggsave(paste0('Other prepublication stuff/plots/zoop/Biomass_All','.png'), dpi = 600, height = 21, width = 18, units = "cm")
+ggsave(paste0('Other prepublication stuff/plots/zoop/Biomass_All','.pdf'), dpi = 600, height = 21, width = 18, units = "cm")
 
 
 ### Geo_Mn Size #  done
@@ -200,11 +203,11 @@ for (j in 1:length(sites)){
     geom_contour(data = df2, aes(x = Distance_Coast/1000, y = Depth, z = Temp), colour = "grey10", binwidth = 1, size = 0.5) +
     geom_text_contour(data = df2, aes(x = Distance_Coast/1000, y = Depth, z = Temp), breaks = seq(16, 25)) +
     scale_fill_distiller(palette = "Spectral", direction = -1, limits = c(400, 500), oob = scales::squish,
-                         name=expression(bold("Geometric\nmean\nnize\n(ESD µm) "))) +
+                         name=expression(bold("Geometric Mean Size (µm ESD)"))) +
     geom_line(data = mydata2, mapping = aes(x = Distance_Coast/1000, y = -Depth), alpha = 0.5, size = 0.2) +
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast/1000, y = -Depth), alpha = 0.5, size = 0.1, show.legend = FALSE) +
     geom_ribbon(data= Bathy2, aes(x = Distance_Coast/1000, ymax = Bathymetry, ymin=-200), inherit.aes = FALSE, fill = "grey60") +
-    geom_text(x = 11.1, y = -120, label = paste0(" Geometric Mean Size\n at ", site_labels[j]), stat = "identity", inherit.aes = FALSE, hjust = 0) +
+    geom_text(x = 11.5, y = -110, label = paste0(letters[j],"Geometric \nMean Size at\n", site_labels[j]), stat = "identity", inherit.aes = FALSE, hjust = 0) +
     theme_classic() +
     theme(plot.margin = unit(c(0,0,0,0), "mm"),
           axis.text  = element_text(colour="black"),
@@ -213,14 +216,16 @@ for (j in 1:length(sites)){
     coord_cartesian(xlim = c(13, 48), expand = TRUE, ylim = c(-140,-10)) +
     #scale_x_continuous(limits = c(12, 48), expand = c(0, 0)) +
     scale_y_continuous(expand = c(0, 0), breaks = c(-125,-100,-75,-50,-25)) +
-    guides(size = "none", shape = "none")
+    guides(size = "none", shape = "none") +
+    theme(legend.title = element_text(angle = 270, hjust= 0.5, size = 12),
+          axis.title = element_text(face = "bold")) + guides(fill = guide_colorbar(title.position = "right"))
 }
 
 pl[[4]] <- pl[[4]] + xlab("Distance from Coastline (km)")
-pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect')
+pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect') & theme(legend.key.height = unit(3.9, "cm"))
 
-ggsave(paste0('../plots/zoop/GeoMn_All','.png'), dpi = 600, height = 21, width = 18, units = "cm")
-ggsave(paste0('../plots/zoop/GeoMn_All','.pdf'), dpi = 600, height = 21, width = 18, units = "cm")
+ggsave(paste0('Other prepublication stuff/plots/zoop/GeoMn_All','.png'), dpi = 600, height = 21, width = 18, units = "cm")
+ggsave(paste0('Other prepublication stuff/plots/zoop/GeoMn_All','.pdf'), dpi = 600, height = 21, width = 18, units = "cm")
 
 
 
@@ -254,11 +259,11 @@ for (j in 1:length(sites)){
     geom_contour(data = df2, aes(x = Distance_Coast/1000, y = Depth, z = Temp), colour = "grey10", binwidth = 1, size = 0.5) +
     geom_text_contour(data = df2, aes(x = Distance_Coast/1000, y = Depth, z = Temp), breaks = seq(16, 25)) +
     scale_fill_distiller(palette = "Spectral", direction = -1, limits = c(-1.4, -0.8), oob = scales::squish,
-                         name=expression(bold("Pareto\nShape\nParameter\nc"))) +
+                         name=expression(bold("Pareto Shape Parameter")~bolditalic("c"))) +
     geom_line(data = mydata2, mapping = aes(x = Distance_Coast/1000, y = -Depth),alpha = 0.5, size = 0.2) +
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast/1000, y = -Depth), alpha = 0.5, size = 0.1, show.legend = FALSE) +
     geom_ribbon(data= Bathy2, aes(x = Distance_Coast/1000, ymax = Bathymetry, ymin=-200), inherit.aes = FALSE, fill = "grey60") +
-    geom_text(x = 12.010, y = -110, label = paste0("Pareto shape\nparameter c\nat ", site_labels[j]), stat = "identity", inherit.aes = FALSE, hjust = 0) +
+    geom_text(x = 12.000, y = -110, label = paste0(letters[j],"Pareto\nshape parameter c\nat ", site_labels[j]), stat = "identity", inherit.aes = FALSE, hjust = 0) +
     theme_classic() +
     theme(plot.margin = unit(c(0,0,0,0), "mm"),
           axis.text  = element_text(colour="black"),
@@ -267,15 +272,17 @@ for (j in 1:length(sites)){
     coord_cartesian(xlim = c(13, 48), expand = TRUE, ylim = c(-140,-10)) +
     #scale_x_continuous(limits = c(12, 48), expand = c(0, 0)) +
     scale_y_continuous(expand = c(0, 0), breaks = c(-125,-100,-75,-50,-25)) +
-    guides(size = "none", shape = "none")
+    guides(size = "none", shape = "none") +
+    theme(legend.title = element_text(angle = 270, hjust= 0.5, size = 12),
+          axis.title = element_text(face = "bold")) + guides(fill = guide_colorbar(title.position = "right"))
 
 }
 
 pl[[4]] <- pl[[4]] + xlab("Distance from Coastline (km)")
-pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect')
+pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect') & theme(legend.key.height = unit(3.9, "cm"))
 
-ggsave(paste0('../plots/zoop/ParetoSlope_All','.png'), dpi = 600, height = 21, width = 18, units = "cm")
-ggsave(paste0('../plots/zoop/ParetoSlope_All','.pdf'), dpi = 600, height = 21, width = 18, units = "cm")
+ggsave(paste0('Other prepublication stuff/plots/zoop/ParetoSlope_All','.png'), dpi = 600, height = 21, width = 18, units = "cm")
+ggsave(paste0('Other prepublication stuff/plots/zoop/ParetoSlope_All','.pdf'), dpi = 600, height = 21, width = 18, units = "cm")
 
 
 ### NBSS plots
@@ -312,7 +319,7 @@ for (j in 1:length(sites)){
     geom_line(data = mydata2, mapping = aes(x = Distance_Coast/1000, y = -Depth),alpha = 0.5, size = 0.2) +
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast/1000, y = -Depth), alpha = 0.5, size = 0.1, show.legend = FALSE) +
     geom_ribbon(data= Bathy2, aes(x = Distance_Coast/1000, ymax = Bathymetry, ymin=-200), inherit.aes = FALSE, fill = "grey60") +
-    geom_text(x = 12.010, y = -110, label = paste0("NBSS Slope at\n", site_labels[j]), stat = "identity", inherit.aes = FALSE, hjust = 0) +
+    geom_text(x = 12.010, y = -110, label = paste0(letters[j],"NBSS Slope at\n", site_labels[j]), stat = "identity", inherit.aes = FALSE, hjust = 0) +
     theme_classic() +
     theme(plot.margin = unit(c(0,0,0,0), "mm"),
           axis.text  = element_text(colour="black"),
@@ -321,15 +328,17 @@ for (j in 1:length(sites)){
     coord_cartesian(xlim = c(13, 48), expand = TRUE, ylim = c(-140,-10)) +
     #scale_x_continuous(limits = c(12, 48), expand = c(0, 0)) +
     scale_y_continuous(expand = c(0, 0), breaks = c(-125,-100,-75,-50,-25)) +
-    guides(size = "none", shape = "none")
+    guides(size = "none", shape = "none")+
+    theme(legend.title = element_text(angle = 270, hjust= 0.5, size = 12),
+          axis.title = element_text(face = "bold")) + guides(fill = guide_colorbar(title.position = "right"))
   
 }
 
 pl[[4]] <- pl[[4]] + xlab("Distance from Coastline (km)")
-pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect')
+pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect')& theme(legend.key.height = unit(3.9, "cm"))
 
-ggsave(paste0('../plots/zoop/NBSS_Slope_All','.png'), dpi = 600, height = 21, width = 18, units = "cm")
-ggsave(paste0('../plots/zoop/NBSS_Slope_All','.pdf'), dpi = 600, height = 21, width = 18, units = "cm")
+ggsave(paste0('Other prepublication stuff/plots/zoop/NBSS_Slope_All','.png'), dpi = 600, height = 21, width = 18, units = "cm")
+ggsave(paste0('Other prepublication stuff/plots/zoop/NBSS_Slope_All','.pdf'), dpi = 600, height = 21, width = 18, units = "cm")
 
 cor.test(mydata$NBSSSlope, mydata$ParetoSlope)
 plot(mydata$NBSSSlope, mydata$ParetoSlope)
