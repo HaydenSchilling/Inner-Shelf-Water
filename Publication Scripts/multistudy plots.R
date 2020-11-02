@@ -48,9 +48,10 @@ P_map <- ggplot() +
   geom_text_repel(data = mydata2, aes(x = Longitude, y = Latitude, label = `Reference Number`),col="black", size =3.5, fontface = "bold") +
   theme_bw() +
   scale_x_continuous(expand=c(0,0)) + scale_y_continuous(expand=c(0,0)) +
-  theme(axis.text = element_blank(),
-        axis.title = element_blank(),
-        axis.ticks = element_blank())
+  theme(axis.text = element_text(colour="black"),
+        axis.title = element_text(face="bold"),
+        axis.ticks = element_line(colour="black"))
+  
 
 P_map
 
@@ -95,7 +96,7 @@ pC <- ggplot(mydata_s, aes(y = Ratio, x = Bathy, label = `Reference Number`)) + 
   ylab("") +
   geom_errorbarh(aes(xmin=Inhore_Bath, xmax=Offshore_Bathy), col = "grey60",height=0)+
   scale_x_log10()+ xlab("Bathymetry (m)") + geom_text_repel(col="blue")+
-  scale_y_continuous(breaks=c(1,1.2,1.4,1.6,1.8), limits = c(0.9,1.8), expand = c(0,0))+
+  scale_y_continuous(breaks=c(0.5,0.75, 1,1.25,1.5,1.75), limits = c(0.45,1.8), expand = c(0,0))+
   #scale_color_manual(values=cbPalette) +
   theme(axis.title = element_text(face = "bold", size = 12),
         axis.text.x = element_text(colour = "black", size = 10),
@@ -119,15 +120,15 @@ p_final2
 #library(gridExtra)
 
 mydata3 <- mydata2 %>% select(`Reference Number`, Region, Study)
+mydata3 <- mydata3 %>% distinct(`Reference Number`, .keep_all = TRUE)
 mydata3 <- mydata3 %>% rename("Ref. #" = `Reference Number`)
 mydata3
 
-tt2 <- gridExtra::ttheme_minimal(base_size = 10, padding = unit(c(1.5,1.5),"mm"))
+tt2 <- gridExtra::ttheme_minimal(base_size = 9, padding = unit(c(1.5,1.5),"mm"))
 
 
 t_test <- (pA + pB + pC) / (P_map + gridExtra::tableGrob(mydata3, theme = tt2, rows = NULL)) + plot_layout(heights = c(0.69,1))
 t_test
-
-#ggsave("Other prepublication stuff/plots/multiplot final.png", dpi = 600, units = "cm", height = 14.8, width = 21)
-#ggsave("Other prepublication stuff/plots/multiplot final.pdf", dpi = 600, units = "cm", height = 14.8, width = 21)
-### Note one author name edited later to get correct symbol.
+ggsave("Other prepublication stuff/plots/multiplot final.png", dpi = 600, units = "cm", height = 14.8, width = 21)
+ggsave("Other prepublication stuff/plots/multiplot final.pdf", dpi = 600, units = "cm", height = 14.8, width = 21)
+### Note two author names edited later to get correct symbol.
