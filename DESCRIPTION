@@ -25,6 +25,7 @@ Depends:
     glmmTMB,
     gridExtra,
     gstat,
+    holepunch,
     knitr,
     lattice,
     lctools,
@@ -56,5 +57,7 @@ Depends:
     tidyr,
     tidyverse,
     visreg
+Remotes: 
+    karthik/holepunch
 Encoding: UTF-8
 LazyData: true
