@@ -178,13 +178,13 @@ site_labels <- c("Cape Byron (28.6°S)", "Evans Head (29°S)" ,"North Solitary (
 
 ### V_Shore interpoLation and plots
 
-
+letters <- c("A) ", "B) ", "C) ", "D) " )
 ### NEW Plotting
 pl <- list()
 
-for (j in sites){
+for (j in 1:length(sites)){
   mydata2 <- mydata %>%
-    filter(OPC_site == j & is.na(Depth) == FALSE & is.na(V_shore)==FALSE) %>%
+    filter(OPC_site == sites[j] & is.na(Depth) == FALSE & is.na(V_shore)==FALSE) %>%
     select(c(Distance_Coast, Depth, V_shore, OPC_site)) #, cast_no, Temp # from biomass code
   
   # Get the max depth of each cast
@@ -203,7 +203,7 @@ for (j in sites){
   # Limits <- Limits[order(Limits$Distance_Coast),]
   # Limits <- rbind(Limits, Limits2)
   
-  Bathy2 <- filter(Bathy, site2 == j)
+  Bathy2 <- filter(Bathy, site2 == sites[j])
   
   fit1 <- with(mydata2, akima::interp(x = Distance_Coast, y = -Depth, z = V_shore, nx = 100, ny = 100))
   #fit2 <- with(mydata2, interp(x = Distance_Coast, y = -Depth, z = Temp, nx = 100, ny = 100))
@@ -237,40 +237,40 @@ for (j in sites){
                     default = FALSE, clip = "on") +
     guides(size = "none", shape = "none") +
     theme(legend.title = element_text(angle = 270, hjust= 0.5),
-          axis.title = element_text(face = "bold")) + guides(fill = guide_colorbar(title.position = "right"))
+          axis.title = element_text(face = "bold")) + guides(fill = guide_colorbar(title.position = "right"))+
+    geom_text(x = 12.01, y = -230, 
+              label = paste0(letters[j],site_labels[j]), stat = "identity", 
+              inherit.aes = FALSE, hjust = 0)
   # + geom_polygon(data = Limits, mapping = aes(x = Distance_Coast, y = -maxD), inherit.aes = FALSE, colour = "white")
 }
 
 
-letters <- c("A) ", "B) ", "C) ", "D) " )
 
-
-
-#Add Temperature line (21 deg C isotherm from Seasoar)
-for (j in 1:length(sitesT)){
-  mydata2T <- mydataT %>%
-    filter(site == sitesT[j] & is.na(Depth) == FALSE & is.na(Biomass)==FALSE) %>%
-    select(c(Distance_Coast, Depth, Biomass, cast_no, Temp))
-  
-  pl[[j]]  
-  fit2 <- with(mydata2T, interp(x = Distance_Coast, y = -Depth, z = Temp, nx = 100, ny = 100))
-  
-  df2 <- melt(fit2$z, na.rm = TRUE)
-  names(df2) <- c("x", "y", "Temp")
-  df2$Distance_Coast <- fit2$x[df2$x]
-  df2$Depth <- fit2$y[df2$y]
-  
-  pl[[j]] <- pl[[j]] + geom_contour(data = df2, inherit.aes = F,
-                                    aes(x = Distance_Coast/1000, y = Depth, z = Temp),
-                                    colour = "red", breaks = c(21), size = 1) +
-    #geom_text_contour(data = df2, inherit.aes = F,
-    #  aes(x = Distance_Coast/1000, y = Depth, z = Temp), 
-    #  breaks = c(21), colour = "brown")
-    geom_text(x = 12.01, y = -230, 
-              label = paste0(letters[j],site_labels[j]), stat = "identity", 
-              inherit.aes = FALSE, hjust = 0)
-  
-}
+# #Add Temperature line (21 deg C isotherm from Seasoar)
+# for (j in 1:length(sitesT)){
+#   mydata2T <- mydataT %>%
+#     filter(site == sitesT[j] & is.na(Depth) == FALSE & is.na(Biomass)==FALSE) %>%
+#     select(c(Distance_Coast, Depth, Biomass, cast_no, Temp))
+#   
+#   pl[[j]]  
+#   fit2 <- with(mydata2T, interp(x = Distance_Coast, y = -Depth, z = Temp, nx = 100, ny = 100))
+#   
+#   df2 <- melt(fit2$z, na.rm = TRUE)
+#   names(df2) <- c("x", "y", "Temp")
+#   df2$Distance_Coast <- fit2$x[df2$x]
+#   df2$Depth <- fit2$y[df2$y]
+#   
+#   pl[[j]] <- pl[[j]] + geom_contour(data = df2, inherit.aes = F,
+#                                     aes(x = Distance_Coast/1000, y = Depth, z = Temp),
+#                                     colour = "red", breaks = c(21), size = 1) +
+#     #geom_text_contour(data = df2, inherit.aes = F,
+#     #  aes(x = Distance_Coast/1000, y = Depth, z = Temp), 
+#     #  breaks = c(21), colour = "brown")
+#     geom_text(x = 12.01, y = -230, 
+#               label = paste0(letters[j],site_labels[j]), stat = "identity", 
+#               inherit.aes = FALSE, hjust = 0)
+#   
+# }
 
 pl[[4]] <- pl[[4]] + xlab("Distance from Coastline (km)")
 pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect') & theme(legend.key.height = unit(3.9, "cm"))
@@ -359,9 +359,9 @@ for (j in 1:length(sitesT)){
   df2$Distance_Coast <- fit2$x[df2$x]
   df2$Depth <- fit2$y[df2$y]
   
-  pl[[j]] <- pl[[j]] + geom_contour(data = df2, inherit.aes = F,
-                                    aes(x = Distance_Coast/1000, y = Depth, z = Temp),
-                                    colour = "red", breaks = c(21), size = 1) +
+  pl[[j]] <- pl[[j]] + #geom_contour(data = df2, inherit.aes = F,
+                      #              aes(x = Distance_Coast/1000, y = Depth, z = Temp),
+                       #             colour = "red", breaks = c(21), size = 1) +
     #geom_text_contour(data = df2, inherit.aes = F,
     #  aes(x = Distance_Coast/1000, y = Depth, z = Temp), 
     #  breaks = c(21), colour = "brown")
