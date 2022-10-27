@@ -1,8 +1,8 @@
 *.Rhistory
-Other prepublication stuff/*
 *.pptx
 *.Rhistory
 *.nc
 *.html
 .Rproj*
 .Rproj.user
+Other prepublication stuff_2/*
