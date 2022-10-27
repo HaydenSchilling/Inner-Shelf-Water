@@ -97,6 +97,116 @@ site_labels <- c("Cape Byron (28.6°S)", "Evans Head (29°S)" ,"North Solitary (
 
 letters <- c("A) ", "B) ", "C) ", "D) " )
 
+## Summary Table
+sum_table_biomass <- mydata %>%
+  filter(is.na(Depth) == FALSE & is.na(Biomass)==FALSE) %>%
+  select(c(site, Distance_Coast, Depth, Biomass, cast_no,
+           Temp, ParetoSlope, Abundance, GeoMn)) %>%
+  mutate(DepthBin = case_when(Depth<25 ~ "<25m",
+                              Depth>50 ~ ">50",
+                              T ~ "25-50m"),
+         GeoMn = GeoMn* 1e3*1000) %>%
+  group_by(site, DepthBin) %>% summarise(mean_biomass = mean(Biomass),
+                                   sd_biomass = sd(Biomass),
+                                   mean_abund = mean(Abundance),
+                                   sd_abund = sd(Abundance),
+                                   mean_pareto = mean(ParetoSlope),
+                                   sd_pareto = sd(ParetoSlope),
+                                   mean_GMS = mean(GeoMn),
+                                   sd_GMS = sd(GeoMn),
+                                   n = n())
+write_csv(sum_table_biomass, "Other prepublication stuff/Round 14 JGR Oceans/Reviews/summary by depth and area.csv")
+
+sum_table_biomass <- mydata %>%
+  filter(is.na(Depth) == FALSE & is.na(Biomass)==FALSE) %>%
+  select(c(site, Distance_Coast, Depth, Biomass, cast_no,
+           Temp, ParetoSlope, Abundance, GeoMn)) %>%
+  mutate(DepthBin = case_when(Depth<25 ~ "<25m",
+                              Depth>50 ~ ">50",
+                              T ~ "25-50m"),
+         GeoMn = GeoMn* 1e3*1000) %>%
+  group_by(site) %>% summarise(mean_biomass = mean(Biomass),
+                                         sd_biomass = sd(Biomass),
+                                         mean_abund = mean(Abundance),
+                                         sd_abund = sd(Abundance),
+                                         mean_pareto = mean(ParetoSlope),
+                                         sd_pareto = sd(ParetoSlope),
+                                         mean_GMS = mean(GeoMn),
+                                         sd_GMS = sd(GeoMn),
+                                         n = n())
+write_csv(sum_table_biomass, "Other prepublication stuff/Round 14 JGR Oceans/Reviews/summary by area.csv")
+
+sum_table_temp <- mydata %>%
+  filter(is.na(Depth) == FALSE & is.na(Biomass)==FALSE) %>%
+  select(c(site, Distance_Coast, Depth, Biomass, cast_no,
+           Temp, ParetoSlope, Abundance, GeoMn)) %>%
+  mutate(DepthBin = case_when(Depth<25 ~ "<25m",
+                              Depth>50 ~ ">50",
+                              T ~ "25-50m"),
+         GeoMn = GeoMn* 1e3*1000,
+         Ocean_Zone = case_when(Temp <20 ~ "Tasman",
+                                Temp >21 ~ "EAC",
+                                T ~ "Frontal")) %>%
+  group_by(site, Ocean_Zone) %>% summarise(mean_biomass = mean(Biomass),
+                               sd_biomass = sd(Biomass),
+                               mean_abund = mean(Abundance),
+                               sd_abund = sd(Abundance),
+                               mean_pareto = mean(ParetoSlope),
+                               sd_pareto = sd(ParetoSlope),
+                               mean_GMS = mean(GeoMn),
+                               sd_GMS = sd(GeoMn),
+                               n = n())
+write_csv(sum_table_temp, "Other prepublication stuff/Round 14 JGR Oceans/Reviews/summary by area and zone.csv")
+
+sum_table_temp2 <- mydata %>%
+  filter(is.na(Depth) == FALSE & is.na(Biomass)==FALSE) %>%
+  select(c(site, Distance_Coast, Depth, Biomass, cast_no,
+           Temp, ParetoSlope, Abundance, GeoMn)) %>%
+  mutate(DepthBin = case_when(Depth<25 ~ "<25m",
+                              Depth>50 ~ ">50",
+                              T ~ "25-50m"),
+         GeoMn = GeoMn* 1e3*1000,
+         Ocean_Zone = case_when(Temp <20 ~ "Tasman",
+                                Temp >21 ~ "EAC",
+                                T ~ "Frontal")) %>%
+  group_by(site, Ocean_Zone, DepthBin) %>% summarise(mean_biomass = round(mean(Biomass),2),
+                                           sd_biomass = round(sd(Biomass),2),
+                                           mean_abund = round(mean(Abundance),2),
+                                           sd_abund = round(sd(Abundance),2),
+                                           mean_pareto = round(mean(ParetoSlope),2),
+                                           sd_pareto = round(sd(ParetoSlope),2),
+                                           mean_GMS = round(mean(GeoMn),2),
+                                           sd_GMS = round(sd(GeoMn),2),
+                                           n = n())
+write_csv(sum_table_temp2, "Other prepublication stuff/Round 14 JGR Oceans/Reviews/summary by area and zone and depth.csv")
+
+### DVM plot for reviewer
+EAC_water <- mydata %>%
+  filter(is.na(Depth) == FALSE & is.na(Biomass)==FALSE) %>%
+  select(c(site, Distance_Coast, Depth, Biomass, cast_no,
+           Temp, ParetoSlope, Abundance, GeoMn)) %>%
+  mutate(DepthBin = case_when(Depth<25 ~ "<25m",
+                              Depth>50 ~ ">50m",
+                              T ~ "25-50m"),
+         GeoMn = GeoMn* 1e3*1000,
+         Ocean_Zone = case_when(Temp <20 ~ "Tasman",
+                                Temp >21 ~ "EAC",
+                                T ~ "Frontal")) %>% filter(Ocean_Zone == "EAC") %>%
+  pivot_longer(cols=c(Biomass, ParetoSlope, Abundance, GeoMn),names_to = "Parameter", values_to = "value")
+
+ggplot(EAC_water, aes(site,value, col = factor(DepthBin, level = c("<25m", "25-50m",">50m")))) +
+  geom_boxplot()+ facet_wrap(~Parameter, scales = "free")+
+  scale_color_viridis_d(name="Depth") + theme_bw()+
+  scale_x_discrete(labels=c("Cape Byron\n(Day)", "Evans Head\n(Day)","North Solitary\n(Night)"))+
+  xlab("Transect")+
+  theme(legend.position = "bottom",
+        axis.text = element_text(colour="black", size=10),
+        axis.title = element_text(face="bold", size=12),
+        legend.title = element_text(face="bold", size=12))
+
+#ggsave("Other prepublication stuff/plots/zoop/EAC Core Day Night Comparison.png", width=21, height=14.8, units="cm", dpi=600)
+#ggsave("Other prepublication stuff/plots/zoop/EAC Core Day Night Comparison.pdf", width=21, height=14.8, units="cm", dpi=600)
+
 ### Biomass interpoLation and plots
 pl <- list()
 
@@ -164,8 +274,8 @@ for (j in 1:length(sites)){
 pl[[4]] <- pl[[4]] + xlab("Distance from Coastline (km)")
 pl[[1]] + pl[[2]] + pl[[3]] + pl[[4]] + plot_layout(ncol = 1, guides = 'collect') & theme(legend.key.height = unit(3.9, "cm"))
 
-ggsave(paste0('Other prepublication stuff/plots/zoop/Biomass_All','.png'), dpi = 600, height = 21, width = 18, units = "cm")
-ggsave(paste0('Other prepublication stuff/plots/zoop/Biomass_All','.pdf'), dpi = 600, height = 21, width = 18, units = "cm")
+#ggsave(paste0('Other prepublication stuff/plots/zoop/Biomass_All','.png'), dpi = 600, height = 21, width = 18, units = "cm")
+#ggsave(paste0('Other prepublication stuff/plots/zoop/Biomass_All','.pdf'), dpi = 600, height = 21, width = 18, units = "cm")
 
 
 ### Geo_Mn Size #  done
@@ -508,6 +618,34 @@ pD
 
 ggsave("../plots/zoop/Biomass by distance to coast.png", width=12, height=20, dpi = 600, units = "cm")
 
+
+
+## now top 50m
+mydata50 <- mydata %>% filter(Depth <=50)
+labels2 <- c("CapeByron" = "e) Cape Byron (28.6°S; top 50m)", "EvansHead" = "f) Evans Head (29°S; top 50m)",
+            "NorthSolitary" = "g) North Solitary (30°S; top 50m)", "DiamondHead" = "h) Diamond Head (31.7°S; top 50m)")
+
+
+pD2a <- ggplot(mydata50, aes(x = Distance_Coast_km, y = Biomass)) + geom_point(alpha = 0.5) + facet_wrap(~site, ncol = 1, labeller = labeller(site = labels2)) +
+  theme_classic() + geom_smooth(method = "lm") + scale_y_log10()+ xlab("Distance to Coast (km)") +
+  ylab(NULL)+ #expression(bold("Biomass "(mg~m^-3)))
+  theme(axis.title.x = element_text(face="bold", colour="black", size = 14),
+        axis.text.x  = element_text(colour="black", size = 12), 
+        axis.title.y = element_text(face="bold", colour="black", size = 14),
+        axis.text.y  = element_text(colour="black", size = 12),
+        strip.text = element_text(face = "bold", size = 14, hjust = 0),
+        panel.background = element_rect(fill = NA, color = "black"),
+        strip.background = element_rect(colour=NA, fill=NA))
+pD2a
+
+library(patchwork)
+pD + pD2a
+
+ggsave("Other prepublication stuff/plots/zoop/Biomass by distance to coast revised.png",
+       width=21, height=27, dpi = 600, units = "cm")
+
+
+
 # Biomass against Depth
 pD2 <- ggplot(mydata, aes(x = Depth, y = Biomass)) + geom_point(alpha = 0.5) + facet_wrap(~site, ncol = 1, labeller = labeller(site = labels)) +
   theme_classic() + geom_smooth(method = "lm") + scale_y_log10()+ xlab("Depth (m)") +
@@ -523,6 +661,32 @@ pD2
 
 ggsave("../plots/zoop/Biomass by Depth.png", width=12, height=20, dpi = 600, units = "cm")
 
+# only after a certain bathymetry
+# only after 25km offshore
+
+mydata3 <- mydata %>% filter(Distance_Coast_km >=25)
+labels3 <- c("CapeByron" = "e) Cape Byron (28.6°S;\n>25km Offshore)", "EvansHead" = "f) Evans Head (29°S;\n>25km Offshore)",
+             "NorthSolitary" = "g) North Solitary (30°S;\n>25km Offshore)", "DiamondHead" = "h) Diamond Head (31.7°S;\n>25km Offshore)")
+
+
+pD2f <- ggplot(mydata3, aes(x = Depth, y = Biomass)) + geom_point(alpha = 0.5) + 
+  facet_wrap(~site, ncol = 1, labeller = labeller(site = labels3)) +
+  theme_classic() + geom_smooth(method = "lm") + scale_y_log10()+ xlab("Depth (m)") +
+  ylab(NULL) + #expression(bold("Biomass "(mg~m^-3)))
+  scale_x_continuous(breaks = seq(25,125,25)) +
+  theme(axis.title.x = element_text(face="bold", colour="black", size = 14),
+        axis.text.x  = element_text(colour="black", size = 12), 
+        axis.title.y = element_text(face="bold", colour="black", size = 14),
+        axis.text.y  = element_text(colour="black", size = 12),
+        strip.text = element_text(face = "bold", size = 14, hjust = 0),
+        panel.background = element_rect(fill = NA, color = "black"),
+        strip.background = element_rect(colour=NA, fill=NA))
+pD2f
+
+library(patchwork)
+pD + pD2f
+ggsave("Other prepublication stuff/plots/zoop/Biomass by depth to coast revised.png",
+       width=21, height=27, dpi = 600, units = "cm")
 
 # Plots of Pareto against distance to coast
 

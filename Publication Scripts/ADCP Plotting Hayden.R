@@ -222,9 +222,11 @@ for (j in 1:length(sites)){
     geom_contour(aes(x = Distance_Coast/1000, y = Depth, z = Alongshore_Velocity), colour = "grey10", binwidth = 0.2, size = 0.2) +
     #geom_contour(aes(x = Distance_Coast, y = Depth, z = Temp), colour = "red", binwidth = 1, size = 0.5) +
     geom_text_contour(aes(x = Distance_Coast/1000, y = Depth, z = Alongshore_Velocity), breaks = seq(-1.8, 1.6, by = 0.2)) + # 
-    scale_fill_distiller(palette = "Spectral", direction = -1, limits = c(-1.5,  1.5), oob = scales::squish,
-                         name=expression(bold("Alongshore Velocity "(m~s^-1)))) +
+    #scale_fill_distiller(palette = "Spectral", direction = -1, limits = c(-1.5,  1.5), oob = scales::squish,
+    #                     name=expression(bold("Alongshore Velocity "(m~s^-1)))) +
     #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5, size = 0.2) +
+    scale_fill_gradient2(limits = c(-1.5,  1.5), oob = scales::squish,
+                         name=expression(bold("Alongshore Velocity "(m~s^-1))))+
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast/1000, y = -Depth, alpha = 0.5), size = 0.1, show.legend = FALSE, inherit.aes = FALSE) +
     geom_ribbon(data= Bathy2, aes(x = Distance_Coast/1000, ymax = Bathymetry, ymin=-300), inherit.aes = FALSE, fill = "grey60") +
     theme_classic() +
@@ -321,9 +323,11 @@ for (j in sites){
     geom_contour(aes(x = Distance_Coast/1000, y = Depth, z = Cross_shelf_Velocity), colour = "grey10", binwidth = 0.2, size = 0.2) +
     #geom_contour(aes(x = Distance_Coast, y = Depth, z = Temp), colour = "red", binwidth = 1, size = 0.5) +
     geom_text_contour(aes(x = Distance_Coast/1000, y = Depth, z = Cross_shelf_Velocity), breaks = seq(-1.8, 1.6, by = 0.2)) + # 
-    scale_fill_distiller(palette = "Spectral", direction = -1, limits = c(-0.25,  0.25), oob = scales::squish,
-                         name=expression(bold("Cross Shelf Velocity "(m~s^-1)))) +
+    #scale_fill_distiller(palette = "Spectral", direction = -1, limits = c(-0.25,  0.25), oob = scales::squish,
+    #                     name=expression(bold("Cross Shelf Velocity "(m~s^-1)))) +
     #geom_line(data = mydata2, mapping = aes(x = Distance_Coast, y = -Depth), alpha = 0.5, size = 0.2) +
+    scale_fill_gradient2(limits = c(-0.25,  0.25), oob = scales::squish,
+                         name=expression(bold("Cross Shelf Velocity "(m~s^-1))))+
     geom_point(data = mydata2, mapping = aes(x = Distance_Coast/1000, y = -Depth, alpha = 0.5), size = 0.1, show.legend = FALSE, inherit.aes = FALSE) +
     geom_ribbon(data= Bathy2, aes(x = Distance_Coast/1000, ymax = Bathymetry, ymin=-300), inherit.aes = FALSE, fill = "grey60") +
     theme_classic() +
